@@ -1,0 +1,26 @@
+@Reservae_HostAddress = https://localhost:7085
+@accessToken = "CfDJ8LfhoVh-kNlNp_3JACzHdBt_WLUJax7-y9ymUY2EtdwPgKr_I-B3bRFgDU5cUw_ex-ESFY_HGC2Igv4wi8-WGp5H0Hp8NjsM0R6BAdGEngVqLAzmtOsS8vpGQUBpWBZ4SIeg19tDk7R67kjAJjxaP4pVDNjwiClLCnM1FmkLEKAA3wR7U5S_VJlUSm39TOVDFnHvkJCVWv_pPwF2XiFBP8ADgjA0BihcXjc8mloNI4TiRsWgr9G73EPuifFomwp-7mgOo2_aNHfjI55nkuToqOCYOAQq5oZ3BqRW7yNOHDsHFNofuf6mVxGY-DR-G_QsTTNsrQU9pCY5f1wN3iBrrD65ZgHBeg4uaqb_Q7RERGFY4HGWotEcLaVkAi_eM0hKqFT_X79otA9nbMJFhs2ESQ4SSJeEeWZq6Vmcrk_bs6WXIXpHXpPmMsav_-qTgG8b86prjGaSY6LdLISpAq9qv7tjgZGgUe61AIxA6JlK7FOQjCIqyHulKVHE9-FWgJ5RznVw1w_VTHRrRpWO2IHlhrCqOAIWC0LkEuL8OWggSf0yhRKFRxaM_QtfJk1gqUqdWaTo8BbASHOiCZRwuL86maX-jJmi-CjXFTJXG2_tDpjbSOIzDoNWcmb5IlyMLXtyZB2JVGEC-DqZ9rwYKLanbsCncWOJw10OoQxBkljbtmF-QHEoaqMg9NNzuObtn8Ft4A"
+
+### Cadastro (o Identity gera o hash da senha)
+POST {{Reservae_HostAddress}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "teste@example.com",
+  "password": "Teste123!"
+}
+
+### Login: copie o accessToken retornado para a variavel acima
+POST {{Reservae_HostAddress}}/auth/login?useCookies=false
+Content-Type: application/json
+
+{
+  "email": "teste@example.com",
+  "password": "Teste123!"
+}
+
+### Usuario autenticado (sem token deve retornar 401)
+GET {{Reservae_HostAddress}}/auth/me
+Authorization: Bearer {{accessToken}}
+
+###
