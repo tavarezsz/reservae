@@ -14,4 +14,6 @@ public class Space
     public string Description { get; set; } = string.Empty;
     public CategoryEnum Category { get; set; }
     public string? CoverImagePath { get; set; }
+    public ICollection<AvailabilityRule> AvailabilityRules { get; set; } = new List<AvailabilityRule>();
+    public ICollection<BookableSlot> BookableSlots { get; set; } = new List<BookableSlot>();
 }

@@ -8,6 +8,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     : IdentityDbContext<User>(options)
 {
     public DbSet<Space> Spaces => Set<Space>();
+    public DbSet<AvailabilityRule> AvailabilityRules => Set<AvailabilityRule>();
+    public DbSet<BookableSlot> BookableSlots => Set<BookableSlot>();
+    public DbSet<Booking> Bookings => Set<Booking>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -26,6 +29,40 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             space.HasOne(x => x.Owner)
                 .WithMany(user => user.Spaces)
                 .HasForeignKey(x => x.OwnerId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        builder.Entity<AvailabilityRule>(rule =>
+        {
+            rule.HasOne(x => x.Space)
+                .WithMany(x => x.AvailabilityRules)
+                .HasForeignKey(x => x.SpaceId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        builder.Entity<BookableSlot>(slot =>
+        {
+            slot.HasOne(x => x.AvailabilityRule)
+                .WithMany(x => x.BookableSlots)
+                .HasForeignKey(x => x.AvailabilityRuleId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            slot.HasOne(x => x.Space)
+                .WithMany(x => x.BookableSlots)
+                .HasForeignKey(x => x.SpaceId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        builder.Entity<Booking>(booking =>
+        {
+            booking.HasOne(x => x.BookableSlot)
+                .WithMany(x => x.Bookings)
+                .HasForeignKey(x => x.BookableSlotId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            booking.HasOne(x => x.UserBooked)
+                .WithMany(x => x.Bookings)
+                .HasForeignKey(x => x.UserBookedId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
     }
