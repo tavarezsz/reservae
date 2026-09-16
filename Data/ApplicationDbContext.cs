@@ -34,6 +34,12 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
         builder.Entity<AvailabilityRule>(rule =>
         {
+            rule.ToTable("AvailabilityRules", table =>
+                table.HasCheckConstraint(
+                    "CK_AvailabilityRules_CustomPricePerSpot",
+                    "\"CustomPricePerSpot\" IS NULL OR \"CustomPricePerSpot\" >= 0"));
+            rule.Property(x => x.CustomPricePerSpot).HasPrecision(18, 2);
+
             rule.HasOne(x => x.Space)
                 .WithMany(x => x.AvailabilityRules)
                 .HasForeignKey(x => x.SpaceId)
@@ -42,6 +48,12 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
         builder.Entity<BookableSlot>(slot =>
         {
+            slot.ToTable("BookableSlots", table =>
+                table.HasCheckConstraint(
+                    "CK_BookableSlots_CustomPricePerSpot",
+                    "\"CustomPricePerSpot\" IS NULL OR \"CustomPricePerSpot\" >= 0"));
+            slot.Property(x => x.CustomPricePerSpot).HasPrecision(18, 2);
+
             slot.HasOne(x => x.AvailabilityRule)
                 .WithMany(x => x.BookableSlots)
                 .HasForeignKey(x => x.AvailabilityRuleId)

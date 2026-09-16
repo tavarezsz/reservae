@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Reservae.Data;
@@ -11,9 +12,11 @@ using Reservae.Data;
 namespace Reservae.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260916135252_AddAuditFieldsToSpace")]
+    partial class AddAuditFieldsToSpace
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -168,9 +171,8 @@ namespace Reservae.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<decimal?>("CustomPricePerSpot")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                    b.Property<decimal>("CustomPricePerSpot")
+                        .HasColumnType("numeric");
 
                     b.Property<int>("DayOfTheWeek")
                         .HasColumnType("integer");
@@ -200,10 +202,7 @@ namespace Reservae.Migrations
 
                     b.HasIndex("SpaceId");
 
-                    b.ToTable("AvailabilityRules", null, t =>
-                        {
-                            t.HasCheckConstraint("CK_AvailabilityRules_CustomPricePerSpot", "\"CustomPricePerSpot\" IS NULL OR \"CustomPricePerSpot\" >= 0");
-                        });
+                    b.ToTable("AvailabilityRules");
                 });
 
             modelBuilder.Entity("Reservae.Models.BookableSlot", b =>
@@ -223,9 +222,8 @@ namespace Reservae.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<decimal?>("CustomPricePerSpot")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                    b.Property<decimal>("CustomPricePerSpot")
+                        .HasColumnType("numeric");
 
                     b.Property<DateTime>("EndsAt")
                         .HasColumnType("timestamp with time zone");
@@ -248,10 +246,7 @@ namespace Reservae.Migrations
 
                     b.HasIndex("SpaceId");
 
-                    b.ToTable("BookableSlots", null, t =>
-                        {
-                            t.HasCheckConstraint("CK_BookableSlots_CustomPricePerSpot", "\"CustomPricePerSpot\" IS NULL OR \"CustomPricePerSpot\" >= 0");
-                        });
+                    b.ToTable("BookableSlots");
                 });
 
             modelBuilder.Entity("Reservae.Models.Booking", b =>
