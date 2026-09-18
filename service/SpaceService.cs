@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Diagnostics;
 using Reservae.Models;
 using Reservae.Models.DTOs;
+using Reservae.Models.Enums;
 using Reservae.Models.Interfaces;
 using Reservae.Modesl.DTOs;
 using Reservae.Service.Mappers;
@@ -34,8 +35,24 @@ public class SpaceService(
         return space.ToDto();
     }
 
-    public async Task<SpaceDTO> CreateAsync(Space space)
+    public async Task<SpaceDTO> CreateAsync(CreateSpaceDto dto)
     {
+        var owner = await userManager.FindByIdAsync(dto.OwnerId)
+            ?? throw new KeyNotFoundException($"Usuário com id {dto.OwnerId} não encontrado.");
+
+        var space = new Space(
+            owner.Id,
+            dto.Address,
+            dto.Title,
+            dto.Description,
+            dto.CoverImagePath);
+
+        if (dto.Category is CategoryEnum category)
+            space.ChangeCategory(category);
+
+        if (dto.PricePerSpot is decimal pricePerSpot)
+            space.ChangePrice(pricePerSpot);
+
         var createdSpace = await spaceRepository.AddAsync(space);
         return createdSpace.ToDto();
     }
@@ -46,6 +63,7 @@ public class SpaceService(
             ?? throw new KeyNotFoundException($"Espaço com id {id} não encontrada.");
 
         SpaceMapper.ApplyUpdate(dto, space);
+        await spaceRepository.UpdateAsync(space);
 
         return space.ToDto();
 

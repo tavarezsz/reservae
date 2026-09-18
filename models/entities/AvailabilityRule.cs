@@ -55,6 +55,23 @@ namespace Reservae.Models
 
         public void Activate() => IsActive = true;
         public void Deactivate() => IsActive = false;
+        public void SetActive(bool isActive) => IsActive = isActive;
+
+        public void ChangeSchedule(
+            DayOfTheWeekEnum dayOfTheWeek,
+            TimeOnly startTime,
+            TimeOnly endTime,
+            DateTime validFrom,
+            DateTime validUntil)
+        {
+            ValidatePeriod(startTime, endTime, validFrom, validUntil);
+
+            DayOfTheWeek = dayOfTheWeek;
+            StartTime = startTime;
+            EndTime = endTime;
+            ValidFrom = validFrom;
+            ValidUntil = validUntil;
+        }
 
         private static void ValidatePeriod(
             TimeOnly startTime,

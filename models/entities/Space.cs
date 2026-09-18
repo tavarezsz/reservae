@@ -25,6 +25,7 @@ public class Space : AuditableEntity
         Title = title;
         Description = description;
         CoverImagePath = coverImagePath;
+        Category = CategoryEnum.Outros;
         IsActive = true;
     }
 

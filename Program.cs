@@ -4,10 +4,18 @@ using Reservae.Data;
 using Reservae.Models;
 using Reservae.Models.Interfaces;
 using Reservae.Repository;
+using Reservae.Service;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.UnmappedMemberHandling =
+            JsonUnmappedMemberHandling.Disallow;
+    });
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Configure ConnectionStrings:DefaultConnection para o PostgreSQL.");
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(connectionString));
@@ -23,6 +31,7 @@ builder.Services.AddIdentityApiEndpoints<User>(options =>
 builder.Services.AddScoped(
     typeof(IBaseRepository<>),
     typeof(BaseRepository<>));
+builder.Services.AddScoped<SpaceService>();
 
 var app = builder.Build();
 if (app.Environment.IsDevelopment())
@@ -33,6 +42,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
+app.MapControllers();
 app.MapGroup("/auth").MapIdentityApi<User>();
 app.MapGet("/auth/me", async (System.Security.Claims.ClaimsPrincipal principal, UserManager<User> users) =>
 {
@@ -41,23 +51,5 @@ app.MapGet("/auth/me", async (System.Security.Claims.ClaimsPrincipal principal, 
         ? Results.Unauthorized()
         : Results.Ok(new { user.Id, user.Name, user.Email });
 }).RequireAuthorization();
-
-app.MapGet("/test/spaces", async (
-    IBaseRepository<Space> repository) =>
-{
-    var test = new Space(
-        "faf079b7-2389-44a2-833c-c08614d3b674",
-        "Endereço de teste",
-        "Casa Aurora",
-        "Espaço criado para testar o repositório",
-        "/images/test-space.jpg");
-
-    test.ChangeCategory(Reservae.Models.Enums.CategoryEnum.Outros);
-    test.ChangePrice(100m);
-
-    var addedSpace = await repository.AddAsync(test);
-    var all = await repository.GetAllAsync();
-    return Results.Ok(all);
-});
 
 app.Run();
