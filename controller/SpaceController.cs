@@ -29,6 +29,9 @@ public class SpaceController(SpaceService spaceService) : ControllerBase
         [FromBody] CreateSpaceDto dto
     )
     {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
         var result = await spaceService.CreateAsync(dto);
         return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
     }

@@ -31,7 +31,9 @@ builder.Services.AddIdentityApiEndpoints<User>(options =>
 builder.Services.AddScoped(
     typeof(IBaseRepository<>),
     typeof(BaseRepository<>));
+builder.Services.AddScoped<IBaseRepository<AvailabilityRule>, AvailabilityRuleRepository>();
 builder.Services.AddScoped<SpaceService>();
+builder.Services.AddScoped<AvailabilityRuleService>();
 
 var app = builder.Build();
 if (app.Environment.IsDevelopment())

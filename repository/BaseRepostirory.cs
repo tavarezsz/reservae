@@ -13,7 +13,7 @@ public class BaseRepository<T>(ApplicationDbContext context) : IBaseRepository<T
 
     public virtual async Task<T?> GetByIdAsync(int id)
         => await DbSet.FirstOrDefaultAsync(e => e.Id == id);
-    public async Task<PagedResponseDto<T>> GetPagedAsync(int page, int pageSize)
+    public virtual async Task<PagedResponseDto<T>> GetPagedAsync(int page, int pageSize)
     => await DbSet.OrderBy(e => e.CreatedAt).ToPagedAsync(page, pageSize);
 
     public async Task<List<T>> GetAllAsync()

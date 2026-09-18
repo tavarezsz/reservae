@@ -53,6 +53,56 @@ Authorization: Bearer {{accessToken}}
 }
 
 ### Listar espacos
-GET {{Reservae_HostAddress}}/api/spaces?page=1&pageSize=10
+GET {{Reservae_HostAddress}}/api/spaces?page=1&pageSize=3
 
-###
+### PEgar 1 espaço
+GET {{Reservae_HostAddress}}/api/spaces/4
+
+### Atualizar Espaço
+
+### Criar espaco usando os valores padrao opcionais
+PUT {{Reservae_HostAddress}}/api/spaces/4
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "ownerId": "adfasfsa"
+}
+
+
+##Availability Rules
+
+
+### Criar Regra
+POST {{Reservae_HostAddress}}/api/availability-rule
+Content-Type: application/json
+//Authorization: Bearer {{accessToken}}
+
+{
+  "spaceId": 4,
+  "dayOfTheWeek": 1,
+  "startTime": "08:00:00",
+  "endTime": "12:00:00",
+  "validFrom": "2026-09-18T00:00:00Z",
+  "validUntil": "2026-12-31T23:59:59Z",
+  "customPricePerSpot": 75.00,
+  "isActive": true,
+  "capacity": 10
+}
+
+### Listar regras
+GET {{Reservae_HostAddress}}/api/availability-rule?page=1&pageSize=3
+
+### Pegar 1 regra
+GET {{Reservae_HostAddress}}/api/availability-rule/1
+
+### Atualizar Espaço
+
+### Criar espaco usando os valores padrao opcionais
+PUT {{Reservae_HostAddress}}/api/availability-rule/1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "startTime": "11:00:00"
+}
