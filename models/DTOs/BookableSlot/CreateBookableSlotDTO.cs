@@ -5,10 +5,10 @@ namespace Reservae.Models.DTOs;
 public class CreateBookableSlotDTO
 {
     [Range(1, int.MaxValue)]
-    public int AvailabilityRuleId { get; init; }
+    public int? AvailabilityRuleId { get; init; }
 
     [Range(1, int.MaxValue)]
-    public int SpaceId { get; init; }
+    public int? SpaceId { get; init; }
 
     public DateTime StartsAt { get; init; }
     public DateTime EndsAt { get; init; }
@@ -17,7 +17,7 @@ public class CreateBookableSlotDTO
     public decimal? CustomPricePerSpot { get; init; }
 
     [Range(1, int.MaxValue)]
-    public int Capacity { get; init; }
+    public int? Capacity { get; init; }
 
     public bool? IsActive { get; init; }
 }

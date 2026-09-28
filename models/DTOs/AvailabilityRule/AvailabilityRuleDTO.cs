@@ -12,4 +12,5 @@ public class AvailabilityRuleDto
     public decimal? CustomPricePerSpot { get; set; }
     public bool IsActive { get; set; }
     public int Capacity { get; set; }
+    public int SlotDurationMinutes { get; set; }
 }

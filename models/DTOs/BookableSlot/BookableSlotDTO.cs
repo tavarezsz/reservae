@@ -3,7 +3,7 @@ namespace Reservae.Models.DTOs;
 public class BookableSlotDTO
 {
     public int Id { get; set; }
-    public int AvailabilityRuleId { get; set; }
+    public int? AvailabilityRuleId { get; set; }
     public int SpaceId { get; set; }
     public DateTime StartsAt { get; set; }
     public DateTime EndsAt { get; set; }

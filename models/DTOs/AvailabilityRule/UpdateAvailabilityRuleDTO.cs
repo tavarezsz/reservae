@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Reservae.Models.DTOs;
 
 public class UpdateAvailabilityRuleDTO
@@ -10,4 +12,6 @@ public class UpdateAvailabilityRuleDTO
     public decimal? CustomPricePerSpot { get; init; }
     public bool? IsActive { get; init; }
     public int? Capacity { get; init; }
+    [Range(30, int.MaxValue, ErrorMessage = "A duração mínima de um horário é de 30 minutos.")]
+    public int? SlotDurationMinutes { get; init; }
 }

@@ -20,4 +20,7 @@ public class CreateAvailabilityRuleDTO
 
     [Range(1, int.MaxValue)]
     public int Capacity { get; init; }
+
+    [Range(30, int.MaxValue, ErrorMessage = "A duração mínima de um horário é de 30 minutos.")]
+    public int SlotDurationMinutes { get; init; }
 }

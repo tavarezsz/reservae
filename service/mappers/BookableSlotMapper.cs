@@ -21,15 +21,25 @@ public static class BookableSlotMapper
         };
     }
 
-    public static BookableSlot ToEntity(this CreateBookableSlotDTO dto)
+    public static BookableSlot ToEntity(
+        this CreateBookableSlotDTO dto,
+        int resolvedSpaceId,
+        int resolvedCapacity)
     {
-        var entity = new BookableSlot(
-            dto.AvailabilityRuleId,
-            dto.SpaceId,
-            dto.StartsAt,
-            dto.EndsAt,
-            dto.CustomPricePerSpot,
-            dto.Capacity);
+        var entity = dto.AvailabilityRuleId is int availabilityRuleId
+            ? BookableSlot.FromRule(
+                availabilityRuleId,
+                resolvedSpaceId,
+                dto.StartsAt,
+                dto.EndsAt,
+                dto.CustomPricePerSpot,
+                resolvedCapacity)
+            : BookableSlot.CreateStandalone(
+                resolvedSpaceId,
+                dto.StartsAt,
+                dto.EndsAt,
+                dto.CustomPricePerSpot,
+                resolvedCapacity);
 
         if (dto.IsActive is bool isActive)
             entity.SetActive(isActive);

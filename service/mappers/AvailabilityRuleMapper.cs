@@ -22,7 +22,8 @@ public static class AvailabilityRuleMapper
             ValidUntil = entity.ValidUntil,
             CustomPricePerSpot = entity.CustomPricePerSpot,
             IsActive = entity.IsActive,
-            Capacity = entity.Capacity
+            Capacity = entity.Capacity,
+            SlotDurationMinutes = entity.SlotDurationMinutes
         };
     }
 
@@ -36,7 +37,8 @@ public static class AvailabilityRuleMapper
             dto.ValidFrom,
             dto.ValidUntil,
             dto.CustomPricePerSpot,
-            dto.Capacity);
+            dto.Capacity,
+            dto.SlotDurationMinutes);
 
         if (dto.IsActive is bool isActive)
             entity.SetActive(isActive);
@@ -58,6 +60,9 @@ public static class AvailabilityRuleMapper
         entity.ChangePriceAndCapacity(
             dto.CustomPricePerSpot ?? entity.CustomPricePerSpot,
             dto.Capacity ?? entity.Capacity);
+
+        if (dto.SlotDurationMinutes is int slotDurationMinutes)
+            entity.ChangeSlotDuration(slotDurationMinutes);
 
         if (dto.IsActive is bool isActive)
             entity.SetActive(isActive);

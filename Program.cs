@@ -32,8 +32,10 @@ builder.Services.AddScoped(
     typeof(IBaseRepository<>),
     typeof(BaseRepository<>));
 builder.Services.AddScoped<IBaseRepository<AvailabilityRule>, AvailabilityRuleRepository>();
+builder.Services.AddScoped<IBaseRepository<BookableSlot>, BookableSlotRepository>();
 builder.Services.AddScoped<SpaceService>();
 builder.Services.AddScoped<AvailabilityRuleService>();
+builder.Services.AddScoped<BookableSlotService>();
 
 var app = builder.Build();
 if (app.Environment.IsDevelopment())

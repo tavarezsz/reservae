@@ -31,11 +31,34 @@ public class BookableSlotService(
 
     public async Task<BookableSlotDTO> CreateAsync(CreateBookableSlotDTO dto)
     {
-        var rule = await availabilityRepository.GetByIdAsync(dto.AvailabilityRuleId) ?? throw new KeyNotFoundException($"Regra não encontrada");
+        AvailabilityRule? rule = null;
+        int spaceId;
+        int capacity;
 
-        var space = await spaceRepository.GetByIdAsync(dto.SpaceId) ?? throw new KeyNotFoundException("Espaço não encontrado");
+        if (dto.AvailabilityRuleId is int availabilityRuleId)
+        {
+            rule = await availabilityRepository.GetByIdAsync(availabilityRuleId)
+                ?? throw new KeyNotFoundException("Regra não encontrada.");
 
-        var createdSlot = await bookableSlotRepository.AddAsync(dto.ToEntity());
+            if (dto.SpaceId is int requestedSpaceId && requestedSpaceId != rule.SpaceId)
+                throw new ArgumentException("O espaço informado não pertence à regra de disponibilidade.");
+
+            spaceId = rule.SpaceId;
+            capacity = dto.Capacity ?? rule.Capacity;
+        }
+        else
+        {
+            spaceId = dto.SpaceId
+                ?? throw new ArgumentException("SpaceId é obrigatório para um evento avulso.");
+            capacity = dto.Capacity
+                ?? throw new ArgumentException("Capacity é obrigatória para um evento avulso.");
+        }
+
+        _ = await spaceRepository.GetByIdAsync(spaceId)
+            ?? throw new KeyNotFoundException("Espaço não encontrado.");
+
+        var createdSlot = await bookableSlotRepository.AddAsync(
+            dto.ToEntity(spaceId, capacity));
         return createdSlot.ToDto();
 
     }

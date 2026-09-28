@@ -15,10 +15,12 @@ namespace Reservae.Models
             DateTime validFrom,
             DateTime validUntil,
             decimal? customPricePerSpot,
-            int capacity)
+            int capacity,
+            int slotDurationMinutes)
         {
             ValidatePeriod(startTime, endTime, validFrom, validUntil);
             ValidatePriceAndCapacity(customPricePerSpot, capacity);
+            ValidateSlotDuration(slotDurationMinutes);
 
             if (spaceId <= 0)
                 throw new ArgumentOutOfRangeException(nameof(spaceId));
@@ -31,6 +33,7 @@ namespace Reservae.Models
             ValidUntil = validUntil;
             CustomPricePerSpot = customPricePerSpot;
             Capacity = capacity;
+            SlotDurationMinutes = slotDurationMinutes;
             IsActive = true;
         }
 
@@ -44,6 +47,7 @@ namespace Reservae.Models
         public decimal? CustomPricePerSpot { get; private set; }
         public bool IsActive { get; private set; }
         public int Capacity { get; private set; }
+        public int SlotDurationMinutes { get; private set; }
         public ICollection<BookableSlot> BookableSlots { get; private set; } = new List<BookableSlot>();
 
         public void ChangePriceAndCapacity(decimal? customPricePerSpot, int capacity)
@@ -56,6 +60,12 @@ namespace Reservae.Models
         public void Activate() => IsActive = true;
         public void Deactivate() => IsActive = false;
         public void SetActive(bool isActive) => IsActive = isActive;
+
+        public void ChangeSlotDuration(int slotDurationMinutes)
+        {
+            ValidateSlotDuration(slotDurationMinutes);
+            SlotDurationMinutes = slotDurationMinutes;
+        }
 
         public void ChangeSchedule(
             DayOfTheWeekEnum dayOfTheWeek,
@@ -91,6 +101,14 @@ namespace Reservae.Models
                 throw new ArgumentOutOfRangeException(nameof(price), "O preço não pode ser negativo.");
             if (capacity <= 0)
                 throw new ArgumentOutOfRangeException(nameof(capacity), "A capacidade deve ser positiva.");
+        }
+
+        private static void ValidateSlotDuration(int slotDurationMinutes)
+        {
+            if (slotDurationMinutes < 30)
+                throw new ArgumentOutOfRangeException(
+                    nameof(slotDurationMinutes),
+                    "A duração mínima de um horário é de 30 minutos.");
         }
 
         public void ChangeCustomPrice(decimal? price)
