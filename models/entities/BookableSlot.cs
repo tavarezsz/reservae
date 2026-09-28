@@ -69,6 +69,16 @@ public class BookableSlot : AuditableEntity
 
     public void Activate() => IsActive = true;
     public void Deactivate() => IsActive = false;
+    public void SetActive(bool isActive) => IsActive = isActive;
+
+    public void ChangePeriod(DateTime startsAt, DateTime endsAt)
+    {
+        if (endsAt <= startsAt)
+            throw new ArgumentException("O término deve ser posterior ao início.");
+
+        StartsAt = startsAt;
+        EndsAt = endsAt;
+    }
 
     public void ChangeCustomPrice(decimal? price)
     {
@@ -99,13 +109,14 @@ public class BookableSlot : AuditableEntity
 
     public void ChangeCapacity(int capacity)
     {
-        if(Bookings.Count == 0)
-        {
-            Capacity = capacity;
-            return;
-        }
+        if (capacity <= 0)
+            throw new ArgumentOutOfRangeException(nameof(capacity), "A capacidade deve ser positiva.");
 
-        throw new Exception("Não é possível mudar a capacidade de um horário com reservas");
+        if (Bookings.Count > 0)
+            throw new InvalidOperationException(
+                "Não é possível mudar a capacidade de um horário com reservas.");
+
+        Capacity = capacity;
 
     }
 
