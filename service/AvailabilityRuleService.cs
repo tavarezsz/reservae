@@ -6,7 +6,7 @@ using Reservae.Service.Mappers;
 namespace Reservae.Service;
 
 public class AvailabilityRuleService(
-    IBaseRepository<AvailabilityRule> availabilityRepository,
+    IAvailabilityRuleRepository availabilityRepository,
     IBaseRepository<Space> spaceRepository
 )
 {

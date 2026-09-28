@@ -1,4 +1,3 @@
-using System.Data;
 using Reservae.Models;
 using Reservae.Models.DTOs;
 using Reservae.Models.Interfaces;
@@ -7,7 +6,7 @@ using Reservae.Service.Mappers;
 namespace Reservae.Service;
 
 public class BookableSlotService(
-    IBaseRepository<BookableSlot> bookableSlotRepository,
+    IBookableSlotRepository bookableSlotRepository,
     IBaseRepository<AvailabilityRule> availabilityRepository,
     IBaseRepository<Space> spaceRepository
 
@@ -73,6 +72,13 @@ public class BookableSlotService(
 
     public async Task DeleteAsync(int id)
     {
-        throw new NotImplementedException("Nâo implementado");
+        var slot = await bookableSlotRepository.GetByIdAsync(id)
+            ?? throw new KeyNotFoundException("Horário não encontrado.");
+
+        if (slot.Bookings.Count > 0)
+            throw new InvalidOperationException(
+                "Não é possível excluir um horário que possui reservas.");
+
+        await bookableSlotRepository.DeleteAsync(id);
     }
 }

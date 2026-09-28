@@ -31,8 +31,16 @@ builder.Services.AddIdentityApiEndpoints<User>(options =>
 builder.Services.AddScoped(
     typeof(IBaseRepository<>),
     typeof(BaseRepository<>));
-builder.Services.AddScoped<IBaseRepository<AvailabilityRule>, AvailabilityRuleRepository>();
-builder.Services.AddScoped<IBaseRepository<BookableSlot>, BookableSlotRepository>();
+builder.Services.AddScoped<AvailabilityRuleRepository>();
+builder.Services.AddScoped<IAvailabilityRuleRepository>(services =>
+    services.GetRequiredService<AvailabilityRuleRepository>());
+builder.Services.AddScoped<IBaseRepository<AvailabilityRule>>(services =>
+    services.GetRequiredService<AvailabilityRuleRepository>());
+builder.Services.AddScoped<BookableSlotRepository>();
+builder.Services.AddScoped<IBookableSlotRepository>(services =>
+    services.GetRequiredService<BookableSlotRepository>());
+builder.Services.AddScoped<IBaseRepository<BookableSlot>>(services =>
+    services.GetRequiredService<BookableSlotRepository>());
 builder.Services.AddScoped<SpaceService>();
 builder.Services.AddScoped<AvailabilityRuleService>();
 builder.Services.AddScoped<BookableSlotService>();

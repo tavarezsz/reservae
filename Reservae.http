@@ -70,6 +70,12 @@ Authorization: Bearer {{accessToken}}
 }
 
 
+###Availability de um espaço
+GET {{Reservae_HostAddress}}/api/spaces/4/availability?fromDate=2026-09-01&toDate=2026-10-31
+
+
+
+
 ##Availability Rules
 
 
@@ -87,7 +93,8 @@ Content-Type: application/json
   "validUntil": "2026-12-31T23:59:59Z",
   "customPricePerSpot": 75.00,
   "isActive": true,
-  "capacity": 10
+  "capacity": 10,
+  "SlotDurationMinutes": 75
 }
 
 ### Listar regras
@@ -106,3 +113,6 @@ Authorization: Bearer {{accessToken}}
 {
   "startTime": "11:00:00"
 }
+
+
+

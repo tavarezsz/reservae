@@ -45,4 +45,25 @@ public class SpaceController(SpaceService spaceService) : ControllerBase
         var result = await spaceService.UpdateAsync(id, updateSpaceDto);
         return Ok(result);
     }
+    [HttpGet("{spaceId}/availability")]
+    public async Task<IActionResult> GetAvailability(
+        int spaceId,
+        [FromQuery] DateOnly fromDate,
+        [FromQuery] DateOnly toDate,
+        [FromQuery] DayOfTheWeekEnum? dayOfTheWeek,
+        CancellationToken cancellationToken
+    )
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+        var slots = await spaceService.GetAvailabilityAsync(
+            spaceId,
+            fromDate,
+            toDate,
+            dayOfTheWeek,
+            cancellationToken
+        );
+
+        return Ok(slots);
+    }
 }

@@ -1,17 +1,16 @@
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc.Diagnostics;
 using Reservae.Models;
 using Reservae.Models.DTOs;
 using Reservae.Models.Enums;
 using Reservae.Models.Interfaces;
-using Reservae.Modesl.DTOs;
 using Reservae.Service.Mappers;
-using System.Linq;
 
 namespace Reservae.Service;
 
 public class SpaceService(
     IBaseRepository<Space> spaceRepository,
+    IAvailabilityRuleRepository availabilityRuleRepository,
+    IBookableSlotRepository bookableSlotRepository,
     UserManager<User> userManager
 )
 {
@@ -73,5 +72,146 @@ public class SpaceService(
     {
         throw new NotImplementedException("Nâo implementado");
     }
+
+    public async Task<IReadOnlyList<AvailableSlotDto>> GetAvailabilityAsync(
+        int spaceId,
+        DateOnly fromDate,
+        DateOnly toDate,
+        DayOfTheWeekEnum? dayOfTheWeek = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (toDate < fromDate)
+            throw new ArgumentException(
+                "A data final deve ser igual ou posterior à data inicial.",
+                nameof(toDate));
+
+        _ = await spaceRepository.GetByIdAsync(spaceId)
+            ?? throw new KeyNotFoundException($"Espaço com id {spaceId} não encontrado.");
+
+        var periodStart = ToUtcDateTime(fromDate, TimeOnly.MinValue);
+        var periodEndExclusive = ToUtcDateTime(toDate.AddDays(1), TimeOnly.MinValue);
+
+        var rules = await availabilityRuleRepository.GetActiveForPeriodAsync(
+            spaceId,
+            fromDate,
+            toDate,
+            dayOfTheWeek,
+            cancellationToken);
+        var persistedSlots = await bookableSlotRepository.GetForPeriodAsync(
+            spaceId,
+            periodStart,
+            periodEndExclusive,
+            cancellationToken);
+
+        var materializedByOccurrence = persistedSlots
+            .Where(slot => slot.AvailabilityRuleId.HasValue)
+            .ToDictionary(
+                slot => (slot.AvailabilityRuleId!.Value, slot.StartsAt),
+                slot => slot);
+
+        var result = new List<AvailableSlotDto>();
+
+        foreach (var rule in rules)
+        {
+            var firstDate = Max(fromDate, DateOnly.FromDateTime(rule.ValidFrom));
+            var lastDate = Min(toDate, DateOnly.FromDateTime(rule.ValidUntil));
+
+            for (var date = firstDate; date <= lastDate; date = date.AddDays(1))
+            {
+                if (ToRuleDay(date.DayOfWeek) != rule.DayOfTheWeek)
+                    continue;
+
+                var slotStartTime = rule.StartTime;
+                var duration = TimeSpan.FromMinutes(rule.SlotDurationMinutes);
+
+                while (slotStartTime.Add(duration) <= rule.EndTime)
+                {
+                    var startsAt = ToUtcDateTime(date, slotStartTime);
+                    var endsAt = startsAt.Add(duration);
+                    var occurrenceKey = (rule.Id, startsAt);
+
+                    if (materializedByOccurrence.TryGetValue(occurrenceKey, out var persistedSlot))
+                    {
+                        if (persistedSlot.IsActive)
+                            result.Add(ToAvailableSlotDto(persistedSlot));
+                    }
+                    else
+                    {
+                        result.Add(new AvailableSlotDto
+                        {
+                            BookableSlotId = null,
+                            AvailabilityRuleId = rule.Id,
+                            SpaceId = rule.SpaceId,
+                            StartsAt = startsAt,
+                            EndsAt = endsAt,
+                            PricePerSpot = rule.GetEffectivePricePerSpot(),
+                            Capacity = rule.Capacity,
+                            ReservedQuantity = 0,
+                            AvailableQuantity = rule.Capacity,
+                            IsVirtual = true
+                        });
+                    }
+
+                    slotStartTime = slotStartTime.Add(duration);
+                }
+            }
+        }
+
+        result.AddRange(persistedSlots
+            .Where(slot =>
+                slot.AvailabilityRuleId is null &&
+                slot.IsActive &&
+                (dayOfTheWeek is null ||
+                 ToRuleDay(slot.StartsAt.DayOfWeek) == dayOfTheWeek))
+            .Select(ToAvailableSlotDto));
+
+        return result
+            .OrderBy(slot => slot.StartsAt)
+            .ThenBy(slot => slot.EndsAt)
+            .ToList();
+    }
+
+    private static AvailableSlotDto ToAvailableSlotDto(BookableSlot slot)
+    {
+        var reservedQuantity = slot.Bookings
+            .Where(booking => booking.Status == BookingStatusEnum.Confirmado)
+            .Sum(booking => booking.Quantity);
+
+        return new AvailableSlotDto
+        {
+            BookableSlotId = slot.Id,
+            AvailabilityRuleId = slot.AvailabilityRuleId,
+            SpaceId = slot.SpaceId,
+            StartsAt = slot.StartsAt,
+            EndsAt = slot.EndsAt,
+            PricePerSpot = slot.GetEffectivePricePerSpot(),
+            Capacity = slot.Capacity,
+            ReservedQuantity = reservedQuantity,
+            AvailableQuantity = Math.Max(0, slot.Capacity - reservedQuantity),
+            IsVirtual = false
+        };
+    }
+
+    private static DateTime ToUtcDateTime(DateOnly date, TimeOnly time)
+        => DateTime.SpecifyKind(date.ToDateTime(time), DateTimeKind.Utc);
+
+    private static DateOnly Max(DateOnly first, DateOnly second)
+        => first >= second ? first : second;
+
+    private static DateOnly Min(DateOnly first, DateOnly second)
+        => first <= second ? first : second;
+
+    private static DayOfTheWeekEnum ToRuleDay(DayOfWeek dayOfWeek)
+        => dayOfWeek switch
+        {
+            DayOfWeek.Monday => DayOfTheWeekEnum.Monday,
+            DayOfWeek.Tuesday => DayOfTheWeekEnum.Tuesday,
+            DayOfWeek.Wednesday => DayOfTheWeekEnum.Wednesday,
+            DayOfWeek.Thursday => DayOfTheWeekEnum.Thursday,
+            DayOfWeek.Friday => DayOfTheWeekEnum.Friday,
+            DayOfWeek.Saturday => DayOfTheWeekEnum.Saturday,
+            DayOfWeek.Sunday => DayOfTheWeekEnum.Sunday,
+            _ => throw new ArgumentOutOfRangeException(nameof(dayOfWeek))
+        };
 
 }
