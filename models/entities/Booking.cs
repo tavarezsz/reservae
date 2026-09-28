@@ -17,6 +17,8 @@ public class Booking : AuditableEntity
         ArgumentException.ThrowIfNullOrWhiteSpace(userBookedId);
         if (quantity <= 0)
             throw new ArgumentOutOfRangeException(nameof(quantity), "A quantidade deve ser positiva.");
+        if (!Enum.IsDefined(status))
+            throw new ArgumentOutOfRangeException(nameof(status), "Status inválido.");
 
         BookableSlotId = bookableSlotId;
         UserBookedId = userBookedId;
@@ -42,13 +44,28 @@ public class Booking : AuditableEntity
             throw new InvalidOperationException(
                 "Carregue o BookableSlot antes de alterar a quantidade da reserva.");
 
-        var totalBookings = BookableSlot.GetBookingCount();
+        var reservedByOtherBookings = BookableSlot.Bookings
+            .Where(booking =>
+                booking.Id != Id &&
+                booking.Status == BookingStatusEnum.Confirmado)
+            .Sum(booking => booking.Quantity);
+        var requestedQuantity = Status == BookingStatusEnum.Confirmado
+            ? quantity
+            : 0;
 
-        if (totalBookings - Quantity + quantity > BookableSlot.Capacity)
+        if (reservedByOtherBookings + requestedQuantity > BookableSlot.Capacity)
             throw new InvalidOperationException(
                 "Não temos espaços disponíveis no horário informado.");
 
         Quantity = quantity;
+    }
+
+    public void ChangeStatus(BookingStatusEnum status)
+    {
+        if (!Enum.IsDefined(status))
+            throw new ArgumentOutOfRangeException(nameof(status), "Status inválido.");
+
+        Status = status;
     }
 
 }

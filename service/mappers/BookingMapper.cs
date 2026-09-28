@@ -31,7 +31,7 @@ public static class BookingMapper
     public static void ApplyUpdate(this UpdateBookingDto dto, Booking entity)
     {
         if (dto.Status is BookingStatusEnum status)
-            entity.Status = status;
+            entity.ChangeStatus(status);
 
         if (dto.Quantity is int quantity)
             entity.ChangeQuantity(quantity);

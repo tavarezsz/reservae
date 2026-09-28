@@ -49,6 +49,7 @@ builder.Services.AddScoped<IBaseRepository<Booking>>(services =>
 builder.Services.AddScoped<SpaceService>();
 builder.Services.AddScoped<AvailabilityRuleService>();
 builder.Services.AddScoped<BookableSlotService>();
+builder.Services.AddScoped<BookingService>();
 
 var app = builder.Build();
 if (app.Environment.IsDevelopment())

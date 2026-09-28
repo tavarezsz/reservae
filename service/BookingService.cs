@@ -54,6 +54,7 @@ public class BookingService(
     {
         var booking = await bookingRepository.GetByIdAsync(id) ?? throw new KeyNotFoundException("Agendamento não encontrado");
         BookingMapper.ApplyUpdate(dto, booking);
+        await bookingRepository.UpdateAsync(booking);
 
         return booking.ToDto();
         

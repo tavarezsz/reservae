@@ -129,13 +129,8 @@ public class BookableSlot : AuditableEntity
 
     public int GetBookingCount()
     {
-        int count = 0;
-
-        foreach(Booking booking in Bookings)
-        {
-            count += booking.Quantity;
-        }
-
-        return count;
+        return Bookings
+            .Where(booking => booking.Status == BookingStatusEnum.Confirmado)
+            .Sum(booking => booking.Quantity);
     }
 }

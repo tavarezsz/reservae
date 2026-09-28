@@ -19,14 +19,14 @@ public class BaseRepository<T>(ApplicationDbContext context) : IBaseRepository<T
     public async Task<List<T>> GetAllAsync()
         => await DbSet.ToListAsync();
 
-    public async Task<T> AddAsync(T entity)
+    public virtual async Task<T> AddAsync(T entity)
     {
         await DbSet.AddAsync(entity);
         await Context.SaveChangesAsync();
         return entity;
     }
 
-    public async Task UpdateAsync(T entity)
+    public virtual async Task UpdateAsync(T entity)
     {
         entity.UpdatedAt = DateTime.UtcNow;
         DbSet.Update(entity);
