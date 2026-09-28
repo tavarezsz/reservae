@@ -52,4 +52,18 @@ public class BookableSlotRepository(ApplicationDbContext context)
             .OrderBy(slot => slot.StartsAt)
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<BookableSlot?> GetByRuleOccurrenceAsync(
+        int availabilityRuleId,
+        DateTime startsAt,
+        CancellationToken cancellationToken = default)
+        => await DbSet
+            .Include(slot => slot.AvailabilityRule)
+            .Include(slot => slot.Space)
+            .Include(slot => slot.Bookings)
+            .FirstOrDefaultAsync(
+                slot =>
+                    slot.AvailabilityRuleId == availabilityRuleId &&
+                    slot.StartsAt == startsAt,
+                cancellationToken);
 }

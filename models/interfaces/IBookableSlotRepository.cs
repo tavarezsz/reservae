@@ -9,4 +9,9 @@ public interface IBookableSlotRepository : IBaseRepository<BookableSlot>
         DateTime periodStart,
         DateTime periodEndExclusive,
         CancellationToken cancellationToken = default);
+
+    Task<BookableSlot?> GetByRuleOccurrenceAsync(
+        int availabilityRuleId,
+        DateTime startsAt,
+        CancellationToken cancellationToken = default);
 }

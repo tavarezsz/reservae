@@ -29,7 +29,7 @@ public class BookingController(BookingService bookingService) : ControllerBase
         return Ok(result);
     }
 
-    [HttpPost]
+    [HttpPost("create-manual")]
     public async Task<IActionResult> Create([FromBody] CreateBookingDto dto)
     {
         var result  = await bookingService.CreateAsync(dto);
@@ -51,5 +51,14 @@ public class BookingController(BookingService bookingService) : ControllerBase
     {
         await bookingService.DeleteAsync(id);
         return NoContent();
+    }
+
+    [HttpPost("create-auto")]
+    public async Task<IActionResult> CreateAuto(
+        [FromBody] CreateBookingAutoDto dto
+    )
+    {
+        var result = await bookingService.CreateBookingAutoAsync(dto);
+        return CreatedAtAction(nameof(Create), new {id = result.Id}, result);
     }
 }
