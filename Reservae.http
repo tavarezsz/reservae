@@ -71,7 +71,7 @@ Authorization: Bearer {{accessToken}}
 
 
 ###Availability de um espaço
-GET {{Reservae_HostAddress}}/api/spaces/4/availability?fromDate=2026-09-01&toDate=2026-10-31
+GET {{Reservae_HostAddress}}/api/spaces/4/availability?fromDate=2026-09-01&toDate=2026-09-30&dayOfTheWeek=Monday
 
 
 
@@ -86,15 +86,15 @@ Content-Type: application/json
 
 {
   "spaceId": 4,
-  "dayOfTheWeek": 1,
+  "dayOfTheWeek": 0,
   "startTime": "08:00:00",
   "endTime": "12:00:00",
   "validFrom": "2026-09-18T00:00:00Z",
   "validUntil": "2026-12-31T23:59:59Z",
-  "customPricePerSpot": 75.00,
+  "customPricePerSpot": 65.00,
   "isActive": true,
   "capacity": 10,
-  "SlotDurationMinutes": 75
+  "SlotDurationMinutes": 30
 }
 
 ### Listar regras
@@ -112,6 +112,30 @@ Authorization: Bearer {{accessToken}}
 
 {
   "startTime": "11:00:00"
+}
+
+
+##Bookable Slots
+
+###Criar Horário
+POST {{Reservae_HostAddress}}/api/bookable-slots
+Content-Type: application/json
+
+{
+  "availabilityRuleId": 1,
+  "spaceId": 4,
+  "startsAt": "2026-10-05T10:00:00Z",
+  "endsAt": "2026-10-05T11:00:00Z"
+}
+
+###
+
+##Bookings
+
+POST {{Reservae_HostAddress}}/api/bookings
+Content-Type: application/json
+{
+  "BookableSlotId" : 
 }
 
 

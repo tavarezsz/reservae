@@ -29,7 +29,7 @@ public class BookableSlotController(BookableSlotService bookableSlotService)
     public async Task<IActionResult> Create([FromBody] CreateBookableSlotDTO dto)
     {
         var result = await bookableSlotService.CreateAsync(dto);
-        return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+        return CreatedAtAction(nameof(Create), new { id = result.Id }, result);
     }
 
     [HttpPut("{id:int}")]

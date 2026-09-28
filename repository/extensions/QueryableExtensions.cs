@@ -8,13 +8,14 @@ public static class QueryableExtensions
     public static async Task<PagedResponseDto<T>> ToPagedAsync<T>(
         this IQueryable<T> query,
         int page,
-        int pageSize)
+        int pageSize,
+        CancellationToken cancellationToken = default)
     {
-        var total = await query.CountAsync();
+        var total = await query.CountAsync(cancellationToken);
         var items = await query
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
         return new PagedResponseDto<T>
         {

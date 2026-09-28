@@ -33,18 +33,22 @@ public class Booking : AuditableEntity
 
     public void ChangeQuantity(int quantity)
     {
-        if(quantity <= 0)
-        {
-            throw new ArgumentOutOfRangeException("Não é possível revervar menos de 1 lugar");
-        } 
+        if (quantity <= 0)
+            throw new ArgumentOutOfRangeException(
+                nameof(quantity),
+                "Não é possível reservar menos de 1 lugar.");
 
-        int TotalBookings = BookableSlot.GetBookingCount();
+        if (BookableSlot is null)
+            throw new InvalidOperationException(
+                "Carregue o BookableSlot antes de alterar a quantidade da reserva.");
 
-        if(TotalBookings - Quantity + quantity > BookableSlot.Capacity)
-        {
-            throw new Exception("Não temos espaços disponíveis no horário informado");
-        }
+        var totalBookings = BookableSlot.GetBookingCount();
 
+        if (totalBookings - Quantity + quantity > BookableSlot.Capacity)
+            throw new InvalidOperationException(
+                "Não temos espaços disponíveis no horário informado.");
+
+        Quantity = quantity;
     }
 
 }

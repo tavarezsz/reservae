@@ -41,6 +41,11 @@ builder.Services.AddScoped<IBookableSlotRepository>(services =>
     services.GetRequiredService<BookableSlotRepository>());
 builder.Services.AddScoped<IBaseRepository<BookableSlot>>(services =>
     services.GetRequiredService<BookableSlotRepository>());
+builder.Services.AddScoped<BookingRepository>();
+builder.Services.AddScoped<IBookingRepository>(services =>
+    services.GetRequiredService<BookingRepository>());
+builder.Services.AddScoped<IBaseRepository<Booking>>(services =>
+    services.GetRequiredService<BookingRepository>());
 builder.Services.AddScoped<SpaceService>();
 builder.Services.AddScoped<AvailabilityRuleService>();
 builder.Services.AddScoped<BookableSlotService>();
