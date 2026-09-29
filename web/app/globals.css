@@ -6,21 +6,62 @@
 }
 
 @theme inline {
-  --color-background: var(--background);
+  --color-background: var(--color-surface);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-manrope);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+@theme {
+  /* Marca e ações */
+  --color-brand: #175c43;
+  --color-brand-hover: #104b36;
+  --color-brand-accent: #d9ef8b;
+
+  /* Textos */
+  --color-ink: #173e35;
+  --color-muted: #65736b;
+  --color-on-brand: #ffffff;
+
+  /* Fundos */
+  --color-canvas: #fafaf5;
+  --color-surface: #ffffff;
+  --color-surface-soft: #edf2e7;
+  --color-surface-hint: #e3ebdd;
+
+  /* Bordas e foco */
+  --color-line: #e0e6df;
+  --color-line-strong: #96ac9a;
+  --color-focus: #77a340;
+
+  /* Menu lateral */
+  --color-sidebar: #f0f3eb;
+  --color-sidebar-hover: #e3eadd;
+  --color-sidebar-line: #c9d8c8;
+
+  /* Elementos desabilitados */
+  --color-disabled: #dae1d9;
+  --color-disabled-text: #748378;
+  --color-disabled-subtle: #f9faf8;
+  --color-disabled-muted: #a4aea7;
+  --color-calendar-disabled: #aeb7b0;
+
+  /* Superfícies escuras */
+  --color-dark-surface: #173e35;
+  --color-dark-line: #416259;
+  --color-dark-text: #e2eadc;
+  --color-dark-muted: #c5d6c9;
+
+  /* Erros */
+  --color-error: #923a27;
+  --color-error-surface: #fff0ea;
+
+  /* Sobreposições */
+  --color-overlay: #102d355a;
+  --color-surface-glass: #fffffff5;
 }
 
 body {
-  background: var(--background);
+  background: var(--color-canvas);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
 }
