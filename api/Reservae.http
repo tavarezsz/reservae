@@ -101,7 +101,7 @@ Content-Type: application/json
 GET {{Reservae_HostAddress}}/api/availability-rule?page=1&pageSize=3
 
 ### Pegar 1 regra
-GET {{Reservae_HostAddress}}/api/availability-rule/100
+GET {{Reservae_HostAddress}}/api/availability-rule/1
 
 ### Atualizar Espaço
 

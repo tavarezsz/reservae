@@ -4,19 +4,21 @@ API ASP.NET Core (.NET 10) com PostgreSQL, EF Core Code First e ASP.NET Core Ide
 
 ## Estrutura
 
-- `models/User.cs`: herda de `IdentityUser`. `Id`, `Email`, `PasswordHash` e os demais campos de autenticação são herdados. Não gere nem salve hashes manualmente: use `UserManager<User>`.
-- `models/Space.cs`: espaço com proprietário obrigatório (`OwnerId`), relação de um usuário para vários espaços e preço em `decimal`.
-- `Data/ApplicationDbContext.cs`: herda de `IdentityDbContext<User>` e reúne tabelas do Identity e `Spaces`. Sempre chama `base.OnModelCreating`.
-- `Migrations/`: migration inicial com tabelas `AspNet*` e `Spaces`. Excluir um usuário com espaços é bloqueado pela chave estrangeira.
-- `Program.cs`: registra PostgreSQL, Identity, autenticação, autorização e endpoints.
+- `api/`: API ASP.NET Core, entidades, serviços, repositórios e migrations.
+- `web/`: aplicação Next.js.
+- `api/models/`: entidades, DTOs, enums e interfaces.
+- `api/Data/ApplicationDbContext.cs`: contexto do Entity Framework e Identity.
+- `api/Migrations/`: migrations do banco PostgreSQL.
+- `api/Program.cs`: configuração da API, Identity, serviços e Swagger.
 
 Os IDs de usuário continuam sendo strings (o Identity gera um GUID representado como texto). As propriedades C# foram padronizadas em PascalCase. Categoria é persistida como inteiro; preserve os valores do enum ao adicionar categorias.
 
-## Preparar e executar (PowerShell, na pasta do projeto)
+## Preparar e executar a API
 
 Tenha .NET 10 e uma instância PostgreSQL acessível. Substitua usuário, senha, host e banco conforme seu ambiente. O projeto já usava Npgsql; a antiga connection string de SQL Server foi substituída por uma de PostgreSQL.
 
 ```powershell
+cd api
 dotnet restore
 dotnet tool restore
 dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Port=5432;Database=reservae;Username=postgres;Password=SUA_SENHA"
@@ -31,7 +33,7 @@ Em produção, configure `ConnectionStrings__DefaultConnection` no ambiente. Use
 
 ## Testar autenticação
 
-Use `Reservae.http` nesta ordem:
+Use `api/Reservae.http` nesta ordem:
 
 1. `POST /auth/register` com `email` e `password`.
 2. `POST /auth/login?useCookies=false` com as mesmas credenciais.
@@ -41,13 +43,15 @@ Use `Reservae.http` nesta ordem:
 
 O cadastro padrão recebe apenas e-mail e senha. `Name` é opcional e não é preenchido por esse endpoint; para coletá-lo no cadastro, crie um endpoint próprio com DTO e `UserManager.CreateAsync(user, password)`. O envio de e-mail ainda não está configurado: confirmação de conta e recuperação por e-mail precisam de uma implementação de `IEmailSender<User>` antes de serem usadas. O setup permite login sem confirmação de e-mail.
 
-A documentação JSON fica em `/openapi/v1.json` no ambiente Development.
+A interface do Swagger fica em `/swagger` e o documento OpenAPI em
+`/swagger/v1/swagger.json` no ambiente Development.
 
 ## Evoluir o modelo
 
 Após alterar as entidades ou o mapeamento:
 
 ```powershell
+cd api
 $env:ASPNETCORE_ENVIRONMENT = "Development"
 dotnet ef migrations add NomeDaAlteracao
 dotnet ef database update
