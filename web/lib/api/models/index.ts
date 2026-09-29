@@ -36,6 +36,7 @@ export * from './infoRequest';
 export * from './infoResponse';
 export * from './loginRequest';
 export * from './mapIdentityApiAuthConfirmEmailParams';
+export * from './postApiUploadsImagesBody';
 export * from './postAuthLoginParams';
 export * from './refreshRequest';
 export * from './registerRequest';

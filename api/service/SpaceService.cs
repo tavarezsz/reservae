@@ -53,6 +53,19 @@ public class SpaceService(
         return space.ToDto();
     }
 
+    public async Task<SpaceDTO> ChangeCoverImageAsync(
+        int id,
+        string coverImagePath)
+    {
+        var space = await spaceRepository.GetByIdAsync(id)
+            ?? throw new ResourceNotFoundException($"Espaço com id {id} não encontrado.");
+
+        space.ChangeCoverImage(coverImagePath);
+        await spaceRepository.UpdateAsync(space);
+
+        return space.ToDto();
+    }
+
     public async Task<SpaceDTO> CreateAsync(CreateSpaceDto dto)
     {
         var owner = await userManager.FindByIdAsync(dto.OwnerId)
@@ -62,8 +75,7 @@ public class SpaceService(
             owner.Id,
             dto.Address,
             dto.Title,
-            dto.Description,
-            dto.CoverImagePath);
+            dto.Description);
 
         if (dto.Category is CategoryEnum category)
             space.ChangeCategory(category);

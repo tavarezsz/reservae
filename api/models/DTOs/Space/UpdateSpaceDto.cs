@@ -10,5 +10,4 @@ public class UpdateSpaceDto
     public string? Title { get; set; }
     public string? Description { get; set; }
     public CategoryEnum? Category { get; set; }
-    public string? CoverImagePath { get; set; }
 }

@@ -90,6 +90,7 @@ builder.Services.AddScoped<SpaceService>();
 builder.Services.AddScoped<AvailabilityRuleService>();
 builder.Services.AddScoped<BookableSlotService>();
 builder.Services.AddScoped<BookingService>();
+builder.Services.AddScoped<ImageUploadService>();
 
 var app = builder.Build();
 if (app.Environment.IsDevelopment())
@@ -109,6 +110,7 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 
+app.UseStaticFiles();
 app.UseCors("Web");
 app.UseAuthentication();
 app.UseAuthorization();

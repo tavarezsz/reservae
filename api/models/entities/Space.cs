@@ -11,20 +11,17 @@ public class Space : AuditableEntity
         string ownerId,
         string address,
         string title,
-        string description,
-        string coverImagePath)
+        string description)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(ownerId);
         ArgumentException.ThrowIfNullOrWhiteSpace(address);
         ArgumentException.ThrowIfNullOrWhiteSpace(title);
         ArgumentException.ThrowIfNullOrWhiteSpace(description);
-        ArgumentException.ThrowIfNullOrWhiteSpace(coverImagePath);
 
         OwnerId = ownerId;
         Address = address;
         Title = title;
         Description = description;
-        CoverImagePath = coverImagePath;
         Category = CategoryEnum.Outros;
         IsActive = true;
     }

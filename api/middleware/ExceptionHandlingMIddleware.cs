@@ -32,6 +32,11 @@ public class ExceptionHandlingMiddleware
                     "Recurso não encontrado",
                     exception.Message),
 
+                InvalidUploadException => (
+                    StatusCodes.Status400BadRequest,
+                    "Imagem inválida",
+                    exception.Message),
+
                 _ => (
                     StatusCodes.Status500InternalServerError,
                     "Erro interno",

@@ -25,11 +25,6 @@ export interface CreateSpaceDto {
      * @maxLength 4000
      */
   description: string;
-  /**
-     * @minLength 0
-     * @maxLength 2048
-     */
-  coverImagePath: string;
   category?: CategoryEnum;
   /**
      * @minimum 0

@@ -19,6 +19,4 @@ export interface UpdateSpaceDto {
   /** @nullable */
   description?: string | null;
   category?: CategoryEnum;
-  /** @nullable */
-  coverImagePath?: string | null;
 }

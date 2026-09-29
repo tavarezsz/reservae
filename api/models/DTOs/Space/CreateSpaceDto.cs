@@ -17,9 +17,6 @@ public class CreateSpaceDto
     [Required, StringLength(4000)]
     public required string Description { get; init; }
 
-    [Required, StringLength(2048)]
-    public required string CoverImagePath { get; init; }
-
     public CategoryEnum? Category { get; init; }
 
     [Range(0, double.MaxValue, ErrorMessage = "O preço não pode ser negativo.")]

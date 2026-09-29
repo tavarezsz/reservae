@@ -15,7 +15,8 @@ public static class SpaceMapper
             PricePerSpot = entity.PricePerSpot,
             Title = entity.Title,
             Description = entity.Description,
-            Category = entity.Category
+            Category = entity.Category,
+            CoverImagePath = entity.CoverImagePath
         };
     }
 
@@ -32,7 +33,5 @@ public static class SpaceMapper
         if (dto.IsActive is bool isActive)
             entity.SetActive(isActive);
 
-        if (dto.CoverImagePath is not null)
-            entity.ChangeCoverImage(dto.CoverImagePath);
     }
 }

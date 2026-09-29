@@ -1,3 +1,4 @@
+import { SpaceCard } from "@/src/components/atoms/SpaceCard";
 import { HeroSearch } from "@/src/components/HeroSearch";
 import Link from "next/link";
 
@@ -8,8 +9,20 @@ export default function Home() {
         <h1 className="text-dark-surface text-2xl font-extrabold">reservaê</h1>
         <div className="flex items-center gap-2 text-dark-surface"> <ReserveIcon/> <Link className="text-xs font-bold" href="">Minhas reservas</Link></div>
       </header>
-      <main>
+      <main className="flex flex-col">
         <HeroSearch/>
+        <SpaceCard space={
+          {
+            id: 6,
+            ownerId: "faf079b7-2389-44a2-833c-c08614d3b674",
+            address: "Rua Sinimbu 678",
+            pricePerSpot: 30,
+            title: "Movement Studio",
+            description: "Uma academia para todos",
+            category: 4,
+            coverImagePath: "/uploads/images/b69510e0622a488fab11d02a8d5044e2.jpg"
+          }
+        }/>
       </main>
 
       <footer className="flex justify-between items-center p-4 bg-ink">
