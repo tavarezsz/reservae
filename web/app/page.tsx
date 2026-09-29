@@ -11,6 +11,11 @@ export default function Home() {
       <main>
         <HeroSearch/>
       </main>
+
+      <footer className="flex justify-between items-center p-4 bg-ink">
+        <h3 className="text-brand-accent font-extrabold text-[20px]">reservaê</h3>
+        <p className="text-[10px] text-white">Um lugar pra cada plano.</p>
+      </footer>
     </div>
   );
 }

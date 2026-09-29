@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Reservae.Models;
 using Reservae.Models.DTOs;
 using Reservae.Service;
+using System.ComponentModel.DataAnnotations;
 
 namespace Reservae.Controllers;
 
@@ -9,6 +10,22 @@ namespace Reservae.Controllers;
 [Route("api/spaces")]
 public class SpaceController(SpaceService spaceService) : ControllerBase
 {
+    [HttpGet("search")]
+    public async Task<ActionResult<PagedResponseDto<SpaceDTO>>> Search(
+        [FromQuery, Required, StringLength(200, MinimumLength = 2)] string term,
+        [FromQuery, Range(1, int.MaxValue)] int page = 1,
+        [FromQuery, Range(1, 100)] int pageSize = 10,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await spaceService.SearchAsync(
+            term,
+            page,
+            pageSize,
+            cancellationToken);
+
+        return Ok(result);
+    }
+
     [HttpGet]
     public async Task<ActionResult<PagedResponseDto<SpaceDTO>>> GetPaged(
         [FromQuery] int page = 1,

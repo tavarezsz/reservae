@@ -66,6 +66,11 @@ builder.Services.AddIdentityApiEndpoints<User>(options =>
 builder.Services.AddScoped(
     typeof(IBaseRepository<>),
     typeof(BaseRepository<>));
+builder.Services.AddScoped<SpaceRepository>();
+builder.Services.AddScoped<ISpaceRepository>(services =>
+    services.GetRequiredService<SpaceRepository>());
+builder.Services.AddScoped<IBaseRepository<Space>>(services =>
+    services.GetRequiredService<SpaceRepository>());
 builder.Services.AddScoped<AvailabilityRuleRepository>();
 builder.Services.AddScoped<IAvailabilityRuleRepository>(services =>
     services.GetRequiredService<AvailabilityRuleRepository>());

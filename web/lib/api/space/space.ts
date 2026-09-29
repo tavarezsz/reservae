@@ -9,11 +9,53 @@ import type {
   AvailableSlotDto,
   CreateSpaceDto,
   GetApiSpacesParams,
+  GetApiSpacesSearchParams,
   GetApiSpacesSpaceIdAvailabilityParams,
   SpaceDTO,
   SpaceDTOPagedResponseDto,
   UpdateSpaceDto
 } from '../models';
+
+
+export const getGetApiSpacesSearchUrl = (params: GetApiSpacesSearchParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5144"}/api/spaces/search?${stringifiedParams}` : `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5144"}/api/spaces/search`
+}
+
+export const getApiSpacesSearch = async (params: GetApiSpacesSearchParams, options?: RequestInit): Promise<SpaceDTOPagedResponseDto> => {
+
+  const res = await fetch(getGetApiSpacesSearchUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+)
+
+  const contentType = (res.headers.get('content-type') ?? '').toLowerCase();
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+  if (!res.ok) {
+
+    const err: globalThis.Error & {info?: any, status?: number} = new globalThis.Error();
+    const data  = body ? JSON.parse(body) : {}
+    err.info = data;
+    err.status = res.status;
+    throw err;
+  }
+  const data: SpaceDTOPagedResponseDto = body ? (contentType.includes('json') ? JSON.parse(body) : body) : {}
+  return data
+}
 
 
 export const getGetApiSpacesUrl = (params?: GetApiSpacesParams,) => {

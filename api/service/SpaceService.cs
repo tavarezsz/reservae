@@ -8,12 +8,31 @@ using Reservae.Service.Mappers;
 namespace Reservae.Service;
 
 public class SpaceService(
-    IBaseRepository<Space> spaceRepository,
+    ISpaceRepository spaceRepository,
     IAvailabilityRuleRepository availabilityRuleRepository,
     IBookableSlotRepository bookableSlotRepository,
     UserManager<User> userManager
 )
 {
+    public async Task<PagedResponseDto<SpaceDTO>> SearchAsync(
+        string term,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default)
+    {
+        var paged = await spaceRepository.SearchAsync(
+            term,
+            page,
+            pageSize,
+            cancellationToken);
+
+        return new PagedResponseDto<SpaceDTO>
+        {
+            Items = paged.Items.Select(space => space.ToDto()),
+            TotalCount = paged.TotalCount
+        };
+    }
+
     public async Task<PagedResponseDto<SpaceDTO>> GetPagedAsync(int page, int pagesize)
     {
         var paged = await spaceRepository.GetPagedAsync(page, pagesize);

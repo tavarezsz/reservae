@@ -28,6 +28,7 @@ export * from './getApiBookableSlotsParams';
 export * from './getApiBookingsSpaceSpaceIdParams';
 export * from './getApiBookingsUserUserIdParams';
 export * from './getApiSpacesParams';
+export * from './getApiSpacesSearchParams';
 export * from './getApiSpacesSpaceIdAvailabilityParams';
 export * from './httpValidationProblemDetails';
 export * from './httpValidationProblemDetailsErrors';

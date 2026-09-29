@@ -15,6 +15,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
+        builder.HasPostgresExtension("pg_trgm");
         builder.Entity<User>().Property(user => user.Name).HasMaxLength(200);
 
         builder.Entity<Space>(space =>
@@ -26,6 +27,15 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             space.Property(x => x.Description).IsRequired().HasMaxLength(4000);
             space.Property(x => x.CoverImagePath).HasMaxLength(2048);
             space.Property(x => x.PricePerSpot).HasPrecision(18, 2);
+            space.HasIndex(x => x.Title)
+                .HasMethod("gin")
+                .HasOperators("gin_trgm_ops");
+            space.HasIndex(x => x.Address)
+                .HasMethod("gin")
+                .HasOperators("gin_trgm_ops");
+            space.HasIndex(x => x.Description)
+                .HasMethod("gin")
+                .HasOperators("gin_trgm_ops");
             space.HasOne(x => x.Owner)
                 .WithMany(user => user.Spaces)
                 .HasForeignKey(x => x.OwnerId)
