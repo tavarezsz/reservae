@@ -1,4 +1,3 @@
-using System.Drawing;
 using Microsoft.AspNetCore.Mvc;
 using Reservae.Models.DTOs;
 using Reservae.Service;
@@ -12,7 +11,7 @@ namespace Reservae.Controllers;
 public class AvailabilityRuleController(AvailabilityRuleService availabilityService) : ControllerBase
 {
     [HttpGet]
-    public async Task<IActionResult> GetPaged(
+    public async Task<ActionResult<PagedResponseDto<AvailabilityRuleDto>>> GetPaged(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10)
     {
@@ -20,8 +19,8 @@ public class AvailabilityRuleController(AvailabilityRuleService availabilityServ
         return Ok(result);
     }
 
-    [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(int id)
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult<AvailabilityRuleDto>> GetById(int id)
     {
         var result = await availabilityService.GetByIdAsync(id);
 
@@ -29,7 +28,8 @@ public class AvailabilityRuleController(AvailabilityRuleService availabilityServ
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(
+    [ProducesResponseType<AvailabilityRuleDto>(StatusCodes.Status201Created)]
+    public async Task<ActionResult<AvailabilityRuleDto>> Create(
         [FromBody] CreateAvailabilityRuleDTO dto
     )
     {
@@ -40,8 +40,10 @@ public class AvailabilityRuleController(AvailabilityRuleService availabilityServ
         return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
     }
 
-    [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, [FromBody] UpdateAvailabilityRuleDTO dto)
+    [HttpPut("{id:int}")]
+    public async Task<ActionResult<AvailabilityRuleDto>> Update(
+        int id,
+        [FromBody] UpdateAvailabilityRuleDTO dto)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);

@@ -10,7 +10,7 @@ namespace Reservae.Controllers;
 public class BookingController(BookingService bookingService) : ControllerBase
 {
     [HttpGet("user/{userId}")]
-    public async Task<IActionResult> GetByUserIdPaged(
+    public async Task<ActionResult<PagedResponseDto<BookingDto>>> GetByUserIdPaged(
         string userId,
         [FromQuery] int page = 1,
         [FromQuery] int pagesize = 10)
@@ -20,7 +20,7 @@ public class BookingController(BookingService bookingService) : ControllerBase
     }
 
     [HttpGet("space/{spaceId:int}")]
-    public async Task<IActionResult> GetBySpaceIdPaged(
+    public async Task<ActionResult<PagedResponseDto<BookingDto>>> GetBySpaceIdPaged(
         int spaceId,
         [FromQuery] int page = 1,
         [FromQuery] int pagesize = 10)
@@ -29,15 +29,24 @@ public class BookingController(BookingService bookingService) : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult<BookingDto>> GetById(int id)
+    {
+        var result = await bookingService.GetByIdAsync(id);
+        return Ok(result);
+    }
+
     [HttpPost("create-manual")]
-    public async Task<IActionResult> Create([FromBody] CreateBookingDto dto)
+    [ProducesResponseType<BookingDto>(StatusCodes.Status201Created)]
+    public async Task<ActionResult<BookingDto>> Create(
+        [FromBody] CreateBookingDto dto)
     {
         var result  = await bookingService.CreateAsync(dto);
-        return CreatedAtAction(nameof(Create), new {id = result.Id}, result);
+        return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
     }
 
     [HttpPut("{id:int}")]
-    public async Task<IActionResult> Update(
+    public async Task<ActionResult<BookingDto>> Update(
         int id,
         [FromBody] UpdateBookingDto dto
     )
@@ -47,18 +56,20 @@ public class BookingController(BookingService bookingService) : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
-    public async Task<IActionResult> Delete(int id)
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<ActionResult> Delete(int id)
     {
         await bookingService.DeleteAsync(id);
         return NoContent();
     }
 
     [HttpPost("create-auto")]
-    public async Task<IActionResult> CreateAuto(
+    [ProducesResponseType<BookingDto>(StatusCodes.Status201Created)]
+    public async Task<ActionResult<BookingDto>> CreateAuto(
         [FromBody] CreateBookingAutoDto dto
     )
     {
         var result = await bookingService.CreateBookingAutoAsync(dto);
-        return CreatedAtAction(nameof(Create), new {id = result.Id}, result);
+        return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
     }
 }

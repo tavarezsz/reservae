@@ -10,22 +10,25 @@ namespace Reservae.Controllers;
 public class SpaceController(SpaceService spaceService) : ControllerBase
 {
     [HttpGet]
-    public async Task<IActionResult> GetPaged([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    public async Task<ActionResult<PagedResponseDto<SpaceDTO>>> GetPaged(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10)
     {
         var result = await spaceService.GetPagedAsync(page, pageSize);
 
         return Ok(result);
     }
 
-    [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(int id)
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult<SpaceDTO>> GetById(int id)
     {
         var result = await spaceService.GetByIdAsync(id);
         return Ok(result);
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(
+    [ProducesResponseType<SpaceDTO>(StatusCodes.Status201Created)]
+    public async Task<ActionResult<SpaceDTO>> Create(
         [FromBody] CreateSpaceDto dto
     )
     {
@@ -36,8 +39,10 @@ public class SpaceController(SpaceService spaceService) : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
     }
 
-    [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, [FromBody] UpdateSpaceDto updateSpaceDto)
+    [HttpPut("{id:int}")]
+    public async Task<ActionResult<SpaceDTO>> Update(
+        int id,
+        [FromBody] UpdateSpaceDto updateSpaceDto)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
@@ -45,8 +50,9 @@ public class SpaceController(SpaceService spaceService) : ControllerBase
         var result = await spaceService.UpdateAsync(id, updateSpaceDto);
         return Ok(result);
     }
+
     [HttpGet("{spaceId}/availability")]
-    public async Task<IActionResult> GetAvailability(
+    public async Task<ActionResult<IReadOnlyList<AvailableSlotDto>>> GetAvailability(
         int spaceId,
         [FromQuery] DateOnly fromDate,
         [FromQuery] DateOnly toDate,
