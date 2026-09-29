@@ -35,14 +35,14 @@ public class BookingService(
 
     public async Task<BookingDto> GetByIdAsync(int id)
     {
-        var booking = await bookingRepository.GetByIdAsync(id) ?? throw new KeyNotFoundException("Agendamento não encontrado");
+        var booking = await bookingRepository.GetByIdAsync(id) ?? throw new ResourceNotFoundException("Agendamento não encontrado");
         return booking.ToDto();
     }
 
     public async Task<BookingDto> CreateAsync(CreateBookingDto dto)
     {
-        _ = await bookableSlotRepository.GetByIdAsync(dto.BookableSlotId) ?? throw new KeyNotFoundException("Horário não encontrado");
-        var user = await userManager.FindByIdAsync(dto.UserBookedId) ?? throw new KeyNotFoundException("Usuário não encontrado");
+        _ = await bookableSlotRepository.GetByIdAsync(dto.BookableSlotId) ?? throw new ResourceNotFoundException("Horário não encontrado");
+        var user = await userManager.FindByIdAsync(dto.UserBookedId) ?? throw new ResourceNotFoundException("Usuário não encontrado");
 
         var createdBooking = await bookingRepository.AddAsync(dto.ToEntity());
         return createdBooking.ToDto();
@@ -51,7 +51,7 @@ public class BookingService(
 
     public async Task<BookingDto> UpdateAsync(int id, UpdateBookingDto dto)
     {
-        var booking = await bookingRepository.GetByIdAsync(id) ?? throw new KeyNotFoundException("Agendamento não encontrado");
+        var booking = await bookingRepository.GetByIdAsync(id) ?? throw new ResourceNotFoundException("Agendamento não encontrado");
         BookingMapper.ApplyUpdate(dto, booking);
         await bookingRepository.UpdateAsync(booking);
 
@@ -61,21 +61,21 @@ public class BookingService(
 
     public async Task DeleteAsync(int id)
     {
-        var booking = await bookingRepository.GetByIdAsync(id) ?? throw new KeyNotFoundException("Agendamento não encontrado");
+        var booking = await bookingRepository.GetByIdAsync(id) ?? throw new ResourceNotFoundException("Agendamento não encontrado");
         await bookingRepository.DeleteAsync(id);
     }
 
     public async Task<BookingDto> CreateBookingAutoAsync(CreateBookingAutoDto dto)
     {
         _ = await userManager.FindByIdAsync(dto.UserBookedId)
-            ?? throw new KeyNotFoundException("Usuário não encontrado.");
+            ?? throw new ResourceNotFoundException("Usuário não encontrado.");
 
         BookableSlot slot;
 
         if (dto.BookableSlotId is int slotId)
         {
             slot = await bookableSlotRepository.GetByIdAsync(slotId)
-                ?? throw new KeyNotFoundException("Horário não encontrado.");
+                ?? throw new ResourceNotFoundException("Horário não encontrado.");
 
             if (slot.SpaceId != dto.SpaceId)
                 throw new ArgumentException("O horário não pertence ao espaço informado.");
@@ -83,7 +83,7 @@ public class BookingService(
         else if (dto.AvailabilityRuleId is int ruleId)
         {
             var rule = await availabilityRuleRepository.GetByIdAsync(ruleId)
-                ?? throw new KeyNotFoundException("Regra não encontrada.");
+                ?? throw new ResourceNotFoundException("Regra não encontrada.");
 
             if (rule.SpaceId != dto.SpaceId)
                 throw new ArgumentException("A regra não pertence ao espaço informado.");

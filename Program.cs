@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi;
 using Reservae.Data;
 using Reservae.Models;
 using Reservae.Models.Interfaces;
@@ -9,7 +10,27 @@ using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddOpenApi();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Reservae API",
+        Version = "v1",
+        Description = "API para gerenciamento de espaços, disponibilidades e reservas."
+    });
+
+    options.AddSecurityDefinition("bearer", new OpenApiSecurityScheme
+    {
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        Description = "Informe somente o accessToken retornado por /auth/login."
+    });
+    options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
+    {
+        [new OpenApiSecuritySchemeReference("bearer", document)] = []
+    });
+});
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -54,8 +75,17 @@ builder.Services.AddScoped<BookingService>();
 var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("v1/swagger.json", "Reservae API v1");
+        options.DocumentTitle = "Reservae API";
+        options.EnablePersistAuthorization();
+        options.DisplayRequestDuration();
+    });
 }
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseHttpsRedirection();
 app.UseAuthentication();
@@ -63,7 +93,7 @@ app.UseAuthorization();
 app.MapControllers();
 app.MapGroup("/auth").MapIdentityApi<User>();
 app.MapGet("/auth/me", async (System.Security.Claims.ClaimsPrincipal principal, UserManager<User> users) =>
-{
+{  
     var user = await users.GetUserAsync(principal);
     return user is null
         ? Results.Unauthorized()

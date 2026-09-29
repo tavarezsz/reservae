@@ -24,7 +24,7 @@ public class AvailabilityRuleService(
     public async Task<AvailabilityRuleDto> GetByIdAsync(int id)
     {
         var rule = await availabilityRepository.GetByIdAsync(id)
-            ?? throw new KeyNotFoundException($"Regra com id {id} não encontrada.");
+            ?? throw new ResourceNotFoundException($"Regra com id {id} não encontrada.");
 
         return rule.ToDto();
     }
@@ -32,7 +32,7 @@ public class AvailabilityRuleService(
     public async Task<AvailabilityRuleDto> CreateAsync(CreateAvailabilityRuleDTO dto)
     {
         var space = await spaceRepository.GetByIdAsync(dto.SpaceId)
-        ?? throw new KeyNotFoundException($"Spaço com id {dto.SpaceId} não encontrado");
+        ?? throw new ResourceNotFoundException($"Spaço com id {dto.SpaceId} não encontrado");
 
         var rule = dto.ToEntity();
 
@@ -44,7 +44,7 @@ public class AvailabilityRuleService(
     public async Task<AvailabilityRuleDto> UpdateAsync(int id, UpdateAvailabilityRuleDTO dto)
     {
         var rule = await availabilityRepository.GetByIdAsync(id)
-            ?? throw new KeyNotFoundException("Regra não encontrada");
+            ?? throw new ResourceNotFoundException("Regra não encontrada");
 
         AvailabilityRuleMapper.ApplyUpdate(dto, rule);
         await availabilityRepository.UpdateAsync(rule);

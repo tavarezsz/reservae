@@ -36,7 +36,7 @@ public class BaseRepository<T>(ApplicationDbContext context) : IBaseRepository<T
     public virtual async Task DeleteAsync(int id)
     {
         var entity = await GetByIdAsync(id)
-            ?? throw new KeyNotFoundException($"Registro com id {id} não encontrado.");
+            ?? throw new ResourceNotFoundException($"Registro com id {id} não encontrado.");
         DbSet.Remove(entity);
         await Context.SaveChangesAsync();
     }

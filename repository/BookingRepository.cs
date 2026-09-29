@@ -96,7 +96,7 @@ public class BookingRepository(ApplicationDbContext context)
             .FromSqlInterpolated(
                 $"""SELECT * FROM "BookableSlots" WHERE "Id" = {bookableSlotId} FOR UPDATE""")
             .SingleOrDefaultAsync()
-            ?? throw new KeyNotFoundException("Horário não encontrado.");
+            ?? throw new ResourceNotFoundException("Horário não encontrado.");
 
     private async Task ValidateSlotCanReceiveBookingAsync(
         BookableSlot slot,

@@ -30,14 +30,14 @@ public class SpaceService(
     public async Task<SpaceDTO> GetByIdAsync(int id)
     {
         var space = await spaceRepository.GetByIdAsync(id)
-            ?? throw new KeyNotFoundException($"Espaço com id {id} não encontrada.");
+            ?? throw new ResourceNotFoundException($"Espaço com id {id} não encontrada.");
         return space.ToDto();
     }
 
     public async Task<SpaceDTO> CreateAsync(CreateSpaceDto dto)
     {
         var owner = await userManager.FindByIdAsync(dto.OwnerId)
-            ?? throw new KeyNotFoundException($"Usuário com id {dto.OwnerId} não encontrado.");
+            ?? throw new ResourceNotFoundException($"Usuário com id {dto.OwnerId} não encontrado.");
 
         var space = new Space(
             owner.Id,
@@ -59,7 +59,7 @@ public class SpaceService(
     public async Task<SpaceDTO> UpdateAsync(int id, UpdateSpaceDto dto)
     {
         var space = await spaceRepository.GetByIdAsync(id)
-            ?? throw new KeyNotFoundException($"Espaço com id {id} não encontrada.");
+            ?? throw new ResourceNotFoundException($"Espaço com id {id} não encontrada.");
 
         SpaceMapper.ApplyUpdate(dto, space);
         await spaceRepository.UpdateAsync(space);
@@ -86,7 +86,7 @@ public class SpaceService(
                 nameof(toDate));
 
         _ = await spaceRepository.GetByIdAsync(spaceId)
-            ?? throw new KeyNotFoundException($"Espaço com id {spaceId} não encontrado.");
+            ?? throw new ResourceNotFoundException($"Espaço com id {spaceId} não encontrado.");
 
         var periodStart = ToUtcDateTime(fromDate, TimeOnly.MinValue);
         var periodEndExclusive = ToUtcDateTime(toDate.AddDays(1), TimeOnly.MinValue);

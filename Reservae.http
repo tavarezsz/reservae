@@ -71,7 +71,7 @@ Authorization: Bearer {{accessToken}}
 
 
 ###Availability de um espaço
-GET {{Reservae_HostAddress}}/api/spaces/4/availability?fromDate=2026-09-01&toDate=2026-09-30&dayOfTheWeek=Monday
+GET {{Reservae_HostAddress}}/api/spaces/4/availability?fromDate=2026-10-01&toDate=2026-10-06
 
 
 
@@ -131,20 +131,43 @@ Content-Type: application/json
 ###
 
 ###Consultar Horario
-GET {{Reservae_HostAddress}}/api/bookable-slots/3
+GET {{Reservae_HostAddress}}/api/bookable-slots/6
 ###
 ##Bookings
 
 ###Criar Booking
-POST {{Reservae_HostAddress}}/api/bookings
+POST {{Reservae_HostAddress}}/api/bookings/create-manual
 Content-Type: application/json
 
 {
   "BookableSlotId" : 3,
   "userBookedId" : "{{ownerId}}",
   "status" : 0,
-  "quantity": 10
+  "quantity": 4
 }
 ###
+
+###Criar um booking a partir de um horario virtual
+POST {{Reservae_HostAddress}}/api/bookings/create-auto
+Content-Type: application/json
+
+{
+  "userBookedId" : "{{ownerId}}",
+  "availabilityRuleId": 3,
+  "spaceId": 4,
+  "startsAt": "2026-10-05T09:30:00Z",
+  "endsAt": "2026-10-05T10:00:00Z",
+  "quantity" : 10
+}
+
+###
+
+
+###Consultar agendamentos por id do user
+GET {{Reservae_HostAddress}}/api/bookings/user/{{ownerId}}
+
+
+###
+
 
 

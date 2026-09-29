@@ -24,7 +24,7 @@ public class BookableSlotService(
 
     public async Task<BookableSlotDTO> GetByIdAsync(int id)
     {
-        var slot = await bookableSlotRepository.GetByIdAsync(id) ?? throw new KeyNotFoundException("Horário não encontrado");
+        var slot = await bookableSlotRepository.GetByIdAsync(id) ?? throw new ResourceNotFoundException("Horário não encontrado");
         return slot.ToDto();
     }
 
@@ -37,7 +37,7 @@ public class BookableSlotService(
         if (dto.AvailabilityRuleId is int availabilityRuleId)
         {
             rule = await availabilityRepository.GetByIdAsync(availabilityRuleId)
-                ?? throw new KeyNotFoundException("Regra não encontrada.");
+                ?? throw new ResourceNotFoundException("Regra não encontrada.");
 
             rule.ValidateOccurrence(dto.StartsAt, dto.EndsAt);
 
@@ -56,7 +56,7 @@ public class BookableSlotService(
         }
 
         _ = await spaceRepository.GetByIdAsync(spaceId)
-            ?? throw new KeyNotFoundException("Espaço não encontrado.");
+            ?? throw new ResourceNotFoundException("Espaço não encontrado.");
 
         var createdSlot = await bookableSlotRepository.AddAsync(
             dto.ToEntity(spaceId, capacity));
@@ -66,7 +66,7 @@ public class BookableSlotService(
 
     public async Task<BookableSlotDTO> UpdateAsync(int id, UpdateBookableSlotDTO dto)
     {
-        var slot = await bookableSlotRepository.GetByIdAsync(id) ?? throw new KeyNotFoundException("Horário não encontrado");
+        var slot = await bookableSlotRepository.GetByIdAsync(id) ?? throw new ResourceNotFoundException("Horário não encontrado");
 
         if (slot.AvailabilityRuleId.HasValue &&
             (dto.StartsAt.HasValue || dto.EndsAt.HasValue))
@@ -88,7 +88,7 @@ public class BookableSlotService(
     public async Task DeleteAsync(int id)
     {
         var slot = await bookableSlotRepository.GetByIdAsync(id)
-            ?? throw new KeyNotFoundException("Horário não encontrado.");
+            ?? throw new ResourceNotFoundException("Horário não encontrado.");
 
         if (slot.Bookings.Count > 0)
             throw new InvalidOperationException(
