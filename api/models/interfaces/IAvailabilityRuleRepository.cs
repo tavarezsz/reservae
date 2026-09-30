@@ -4,6 +4,11 @@ namespace Reservae.Models.Interfaces;
 
 public interface IAvailabilityRuleRepository : IBaseRepository<AvailabilityRule>
 {
+    Task<DateTime?> GetLatestActiveValidUntilAsync(
+        int spaceId,
+        DateTime fromUtc,
+        CancellationToken cancellationToken = default);
+
     Task<IReadOnlyList<AvailabilityRule>> GetActiveForPeriodAsync(
         int spaceId,
         DateOnly fromDate,

@@ -89,4 +89,13 @@ public class SpaceController(SpaceService spaceService) : ControllerBase
 
         return Ok(slots);
     }
+
+    [HttpGet("{spaceId:int}/availability-limit")]
+    public async Task<ActionResult<SpaceAvailabilityLimitDto>> GetAvailabilityLimit(
+        int spaceId,
+        CancellationToken cancellationToken)
+    {
+        var limit = await spaceService.GetAvailabilityLimitAsync(spaceId, cancellationToken);
+        return Ok(limit);
+    }
 }
