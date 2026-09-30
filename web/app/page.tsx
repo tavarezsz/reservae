@@ -1,52 +1,51 @@
-import { SpaceCard } from "@/src/components/atoms/SpaceCard";
-import { HeroSearch } from "@/src/components/HeroSearch";
+import { HomeContent } from "@/src/components/HomeContent";
+import { Icon } from "@/src/components/atoms/Icon";
 import Link from "next/link";
+
+const steps = [
+  ["Encontre seu espaço", "Lugares para o que você precisa."],
+  ["Escolha um horário", "Faixas prontas, sem complicação."],
+  ["Confirme sua reserva", "Agora é só aproveitar seu espaço."],
+];
 
 export default function Home() {
   return (
-    <div className="flex flex-col">
-      <header className="flex items-center justify-between py-3.5 px-6 min-h-20">
-        <h1 className="text-dark-surface text-2xl font-extrabold">reservaê</h1>
-        <div className="flex items-center gap-2 text-dark-surface"> <ReserveIcon/> <Link className="text-xs font-bold" href="">Minhas reservas</Link></div>
-      </header>
-      <main className="flex flex-col">
-        <HeroSearch/>
-        <SpaceCard space={
-          {
-            id: 6,
-            ownerId: "faf079b7-2389-44a2-833c-c08614d3b674",
-            address: "Rua Sinimbu 678",
-            pricePerSpot: 30,
-            title: "Movement Studio",
-            description: "Uma academia para todos",
-            category: 4,
-            coverImagePath: "/uploads/images/b69510e0622a488fab11d02a8d5044e2.jpg"
-          }
-        }/>
-      </main>
-
-      <footer className="flex justify-between items-center p-4 bg-ink">
-        <h3 className="text-brand-accent font-extrabold text-[20px]">reservaê</h3>
-        <p className="text-[10px] text-white">Um lugar pra cada plano.</p>
-      </footer>
+    <div className="min-h-screen text-ink">
+      <a href="#conteudo" className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:rounded-lg focus:bg-brand focus:p-3 focus:text-white">Ir para o conteúdo</a>
+      <aside className="fixed inset-y-0 left-0 hidden w-[232px] flex-col border-r border-sidebar-line bg-sidebar px-6 py-9 min-[960px]:flex" aria-label="Navegação principal">
+        <Link href="/" aria-label="reservaê — início" className="text-[32px] font-extrabold tracking-[-.06em]">reservaê</Link>
+        <p className="mt-2 text-[11px] text-muted">Um lugar para cada plano.</p>
+        <p className="mt-12 mb-4 text-[10px] font-extrabold tracking-[.15em] text-muted">SEU RESERVAÊ</p>
+        <nav className="flex flex-col gap-2">
+          <a href="#espacos" aria-current="page" className="flex items-center gap-3 rounded-xl bg-brand px-4 py-3.5 text-sm font-bold text-white"><Icon name="grid" />Explorar espaços</a>
+          <button disabled className="flex items-center gap-3 rounded-xl px-4 py-3.5 text-left text-sm text-muted"><Icon name="calendar" /><span>Minhas reservas<span className="block text-[10px]">Em breve</span></span></button>
+          <button disabled className="flex items-center gap-3 rounded-xl px-4 py-3.5 text-left text-sm text-muted"><Icon name="space" /><span>Área do anunciante<span className="block text-[10px]">Em breve</span></span></button>
+        </nav>
+        <p className="mt-auto border-t border-sidebar-line pt-5 text-xs leading-5 text-muted">Mais espaço.<br />Mais possibilidades.</p>
+      </aside>
+      <div className="min-[960px]:ml-[232px]">
+        <div className="mx-auto max-w-[1440px] px-5 sm:px-8 min-[960px]:px-10 min-[1280px]:px-12">
+          <header className="mb-5 flex min-h-20 items-center justify-between border-b border-line sm:mb-8 min-[960px]:min-h-24">
+            <Link href="/" className="text-[27px] font-extrabold tracking-[-.06em]" aria-label="reservaê — início">reservaê<span className="ml-4 hidden text-xs font-medium tracking-normal text-muted min-[960px]:inline">/ explore</span></Link>
+            <span className="flex items-center gap-2 text-xs font-bold text-muted"><Icon name="calendar" className="size-4" /><span>Minhas reservas<span className="ml-2 hidden rounded-full bg-surface-soft px-2 py-1 text-[9px] sm:inline">Em breve</span></span></span>
+          </header>
+          <main id="conteudo" className="pb-10 sm:pb-14">
+            <HomeContent />
+            <section className="mt-10 rounded-3xl bg-surface-soft p-6 sm:mt-12 sm:p-8" aria-labelledby="how-title">
+              <p className="text-[10px] font-extrabold tracking-[.15em] text-muted">SIMPLES DO COMEÇO AO FIM</p>
+              <h2 id="how-title" className="mt-3 text-[26px] leading-tight font-extrabold tracking-tight sm:text-[30px]">Seu tempo, bem reservado.</h2>
+              <ol className="mt-7 grid gap-6 sm:grid-cols-3 sm:gap-5">
+                {steps.map(([title, description], index) => <li key={title} className="flex gap-3 sm:block"><span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-surface-hint text-xs font-extrabold text-brand">0{index + 1}</span><div><h3 className="text-sm font-extrabold sm:mt-3">{title}</h3><p className="mt-1 text-xs leading-5 text-muted">{description}</p></div></li>)}
+              </ol>
+            </section>
+            <section className="mt-10 flex flex-col gap-5 sm:mt-12 min-[1100px]:flex-row min-[1100px]:items-center min-[1100px]:justify-between" aria-labelledby="advertise-title">
+              <div><h2 id="advertise-title" className="text-[26px] leading-tight font-extrabold tracking-tight sm:text-[30px]">Seu espaço pode virar<br />o próximo plano de alguém.</h2><p className="mt-3 text-sm leading-6 text-muted">Cadastre seu lugar e defina os horários.</p></div>
+              <div className="rounded-xl border border-line bg-surface px-5 py-4"><p className="text-sm font-bold">Quer anunciar seu espaço?</p><p className="mt-1 text-xs text-muted">Cadastro de espaços em breve.</p></div>
+            </section>
+          </main>
+        </div>
+        <footer className="bg-ink text-dark-text"><div className="mx-auto flex max-w-[1440px] flex-wrap items-center justify-between gap-3 px-5 py-7 sm:px-8 min-[960px]:px-10 min-[1280px]:px-12"><span className="text-[25px] font-extrabold tracking-tight text-brand-accent">reservaê</span><p className="text-[11px]">Um lugar para cada plano.</p></div></footer>
+      </div>
     </div>
   );
 }
-
-const ReserveIcon = () => {
-  return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="1.6"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M7 3v4m10-4v4M3 11h18M7 16h3m4 0h3M6 5h12a3 3 0 0 1 3 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a3 3 0 0 1 3-3"></path>
-    </svg>
-  );
-};

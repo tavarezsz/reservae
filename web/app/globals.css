@@ -64,4 +64,9 @@
 body {
   background: var(--color-canvas);
   color: var(--foreground);
+  
+}
+
+body button{
+  cursor: pointer;
 }
