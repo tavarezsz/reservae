@@ -19,6 +19,7 @@ export interface SpaceDTO {
   /** @nullable */
   description: string | null;
   category?: CategoryEnum;
+  isActive?: boolean;
   /** @nullable */
   coverImagePath?: string | null;
 }

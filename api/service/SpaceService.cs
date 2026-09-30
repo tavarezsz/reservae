@@ -35,14 +35,22 @@ public class SpaceService(
 
     public async Task<PagedResponseDto<SpaceDTO>> GetPagedAsync(int page, int pagesize)
     {
-        var paged = await spaceRepository.GetPagedAsync(page, pagesize);
-
-        var activeSpaces = paged.Items.Where(i => i.IsActive).ToList();
+        var paged = await spaceRepository.GetActivePagedAsync(page, pagesize);
 
         return new PagedResponseDto<SpaceDTO>
         {
-            Items = activeSpaces.Select(i => i.ToDto()),
-            TotalCount = activeSpaces.Count
+            Items = paged.Items.Select(i => i.ToDto()),
+            TotalCount = paged.TotalCount
+        };
+    }
+
+    public async Task<PagedResponseDto<SpaceDTO>> GetForOwnerAsync(string ownerId, int page, int pageSize)
+    {
+        var paged = await spaceRepository.GetForOwnerAsync(ownerId, page, pageSize);
+        return new PagedResponseDto<SpaceDTO>
+        {
+            Items = paged.Items.Select(space => space.ToDto()),
+            TotalCount = paged.TotalCount
         };
     }
 

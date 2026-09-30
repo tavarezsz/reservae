@@ -29,6 +29,16 @@ public class AvailabilityRuleService(
         return rule.ToDto();
     }
 
+    public async Task<PagedResponseDto<AvailabilityRuleDto>> GetForSpaceAsync(int spaceId, int page, int pageSize)
+    {
+        var paged = await availabilityRepository.GetForSpaceAsync(spaceId, page, pageSize);
+        return new PagedResponseDto<AvailabilityRuleDto>
+        {
+            Items = paged.Items.Select(rule => rule.ToDto()),
+            TotalCount = paged.TotalCount
+        };
+    }
+
     public async Task<AvailabilityRuleDto> CreateAsync(CreateAvailabilityRuleDTO dto)
     {
         var space = await spaceRepository.GetByIdAsync(dto.SpaceId)

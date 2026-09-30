@@ -12,5 +12,6 @@ public class SpaceDTO
     public required string Title { get; set; }
     public required string Description { get; set; }
     public CategoryEnum Category { get; set; }
+    public bool IsActive { get; set; }
     public string? CoverImagePath { get; set; }
 }

@@ -43,6 +43,13 @@ public class SpaceController(SpaceService spaceService) : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("owner/{ownerId}")]
+    public async Task<ActionResult<PagedResponseDto<SpaceDTO>>> GetForOwner(
+        string ownerId,
+        [FromQuery, Range(1, int.MaxValue)] int page = 1,
+        [FromQuery, Range(1, 100)] int pageSize = 10)
+        => Ok(await spaceService.GetForOwnerAsync(ownerId, page, pageSize));
+
     [HttpPost]
     [ProducesResponseType<SpaceDTO>(StatusCodes.Status201Created)]
     public async Task<ActionResult<SpaceDTO>> Create(

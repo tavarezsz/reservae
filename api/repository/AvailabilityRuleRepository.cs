@@ -10,6 +10,14 @@ namespace Reservae.Repository;
 public class AvailabilityRuleRepository(ApplicationDbContext context)
     : BaseRepository<AvailabilityRule>(context), IAvailabilityRuleRepository
 {
+    public Task<PagedResponseDto<AvailabilityRule>> GetForSpaceAsync(int spaceId, int page, int pageSize)
+        => DbSet.AsNoTracking()
+            .Include(rule => rule.Space)
+            .Where(rule => rule.SpaceId == spaceId)
+            .OrderBy(rule => rule.DayOfTheWeek)
+            .ThenBy(rule => rule.StartTime)
+            .ToPagedAsync(page, pageSize);
+
     public Task<DateTime?> GetLatestActiveValidUntilAsync(
         int spaceId,
         DateTime fromUtc,

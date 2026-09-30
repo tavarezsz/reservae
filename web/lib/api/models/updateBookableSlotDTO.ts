@@ -13,6 +13,7 @@ export interface UpdateBookableSlotDTO {
   endsAt?: string | null;
   /** @nullable */
   customPricePerSpot?: number | null;
+  clearCustomPricePerSpot?: boolean;
   /** @nullable */
   capacity?: number | null;
   /** @nullable */

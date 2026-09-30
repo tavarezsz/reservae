@@ -10,6 +10,7 @@ import type {
   AvailabilityRuleDtoPagedResponseDto,
   CreateAvailabilityRuleDTO,
   GetApiAvailabilityRuleParams,
+  GetApiAvailabilityRuleSpaceSpaceIdParams,
   UpdateAvailabilityRuleDTO
 } from '../models';
 
@@ -182,6 +183,49 @@ const res = await fetch(getPutApiAvailabilityRuleIdUrl(id),
     throw err;
   }
   const data: AvailabilityRuleDto = body ? (contentType.includes('json') ? JSON.parse(body) : body) : {}
+  return data
+}
+
+
+export const getGetApiAvailabilityRuleSpaceSpaceIdUrl = (spaceId: number,
+    params?: GetApiAvailabilityRuleSpaceSpaceIdParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5144"}/api/availability-rule/space/${spaceId}?${stringifiedParams}` : `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5144"}/api/availability-rule/space/${spaceId}`
+}
+
+export const getApiAvailabilityRuleSpaceSpaceId = async (spaceId: number,
+    params?: GetApiAvailabilityRuleSpaceSpaceIdParams, options?: RequestInit): Promise<AvailabilityRuleDtoPagedResponseDto> => {
+
+  const res = await fetch(getGetApiAvailabilityRuleSpaceSpaceIdUrl(spaceId,params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+)
+
+  const contentType = (res.headers.get('content-type') ?? '').toLowerCase();
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+  if (!res.ok) {
+
+    const err: globalThis.Error & {info?: any, status?: number} = new globalThis.Error();
+    const data  = body ? JSON.parse(body) : {}
+    err.info = data;
+    err.status = res.status;
+    throw err;
+  }
+  const data: AvailabilityRuleDtoPagedResponseDto = body ? (contentType.includes('json') ? JSON.parse(body) : body) : {}
   return data
 }
 

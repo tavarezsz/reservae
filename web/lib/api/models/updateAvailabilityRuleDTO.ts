@@ -19,6 +19,7 @@ export interface UpdateAvailabilityRuleDTO {
   validUntil?: string | null;
   /** @nullable */
   customPricePerSpot?: number | null;
+  clearCustomPricePerSpot?: boolean;
   /** @nullable */
   isActive?: boolean | null;
   /** @nullable */

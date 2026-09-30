@@ -19,7 +19,7 @@ export default function Home() {
         <nav className="flex flex-col gap-2">
           <a href="#espacos" aria-current="page" className="flex items-center gap-3 rounded-xl bg-brand px-4 py-3.5 text-sm font-bold text-white"><Icon name="grid" />Explorar espaços</a>
           <Link href="/bookings" className="flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm text-muted hover:bg-sidebar-hover"><Icon name="calendar" />Minhas reservas</Link>
-          <button disabled className="flex items-center gap-3 rounded-xl px-4 py-3.5 text-left text-sm text-muted"><Icon name="space" /><span>Área do anunciante<span className="block text-[10px]">Em breve</span></span></button>
+          <Link href="/advertiser" className="flex items-center gap-3 rounded-xl px-4 py-3.5 text-left text-sm text-muted hover:bg-sidebar-hover"><Icon name="space" />Área do anunciante</Link>
         </nav>
         <p className="mt-auto border-t border-sidebar-line pt-5 text-xs leading-5 text-muted">Mais espaço.<br />Mais possibilidades.</p>
       </aside>
@@ -40,7 +40,7 @@ export default function Home() {
             </section>
             <section className="mt-10 flex flex-col gap-5 sm:mt-12 min-[1100px]:flex-row min-[1100px]:items-center min-[1100px]:justify-between" aria-labelledby="advertise-title">
               <div><h2 id="advertise-title" className="text-[26px] leading-tight font-extrabold tracking-tight sm:text-[30px]">Seu espaço pode virar<br />o próximo plano de alguém.</h2><p className="mt-3 text-sm leading-6 text-muted">Cadastre seu lugar e defina os horários.</p></div>
-              <div className="rounded-xl border border-line bg-surface px-5 py-4"><p className="text-sm font-bold">Quer anunciar seu espaço?</p><p className="mt-1 text-xs text-muted">Cadastro de espaços em breve.</p></div>
+              <Link href="/advertiser/spaces/new" className="rounded-xl border border-line bg-surface px-5 py-4 transition hover:border-brand"><p className="text-sm font-bold">Quer anunciar seu espaço?</p><p className="mt-1 text-xs text-brand">Cadastrar espaço →</p></Link>
             </section>
           </main>
         </div>

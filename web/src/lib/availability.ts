@@ -14,7 +14,7 @@ export function weekStart(value: string) {
 }
 export const dateLabel = (value: string) => parseDate(value).toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" });
 export const shortDate = (value: string) => parseDate(value).toLocaleDateString("pt-BR", { day: "numeric", month: "short" });
-export const timeLabel = (value: string) => new Date(value).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+export const timeLabel = (value: string) => new Date(value).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", timeZone: "UTC" });
 export const slotKey = (slot: AvailableSlotDto) => `${slot.bookableSlotId ?? slot.availabilityRuleId}:${slot.startsAt}:${slot.endsAt}`;
-export const slotDate = (slot: AvailableSlotDto) => slot.startsAt ? dateKey(new Date(slot.startsAt)) : "";
+export const slotDate = (slot: AvailableSlotDto) => slot.startsAt?.slice(0, 10) ?? "";
 export const canBook = (slot: AvailableSlotDto) => !!slot.startsAt && !!slot.endsAt && new Date(slot.startsAt).getTime() > Date.now() && (slot.availableQuantity ?? 0) > 0 && (slot.bookableSlotId != null || slot.availabilityRuleId != null);

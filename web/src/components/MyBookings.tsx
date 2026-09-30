@@ -11,7 +11,7 @@ import { Icon } from "./atoms/Icon";
 
 const PAGE_SIZE = 9;
 const statusLabels: Record<number, string> = { 0: "Confirmada", 1: "Cancelada", 2: "Rejeitada", 3: "Expirada" };
-const dateFormatter = new Intl.DateTimeFormat("pt-BR", { weekday: "short", day: "numeric", month: "long", year: "numeric" });
+const dateFormatter = new Intl.DateTimeFormat("pt-BR", { weekday: "short", day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
 
 export function MyBookings() {
   const userId = process.env.NEXT_PUBLIC_BOOKING_USER_ID;

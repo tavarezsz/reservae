@@ -55,7 +55,9 @@ public static class BookableSlotMapper
             dto.StartsAt ?? entity.StartsAt,
             dto.EndsAt ?? entity.EndsAt);
 
-        if (dto.CustomPricePerSpot is decimal customPrice)
+        if (dto.ClearCustomPricePerSpot)
+            entity.ChangeCustomPrice(null);
+        else if (dto.CustomPricePerSpot is decimal customPrice)
             entity.ChangeCustomPrice(customPrice);
 
         if (dto.Capacity is int capacity)

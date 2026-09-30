@@ -3,12 +3,25 @@ using Reservae.Data;
 using Reservae.Models;
 using Reservae.Models.DTOs;
 using Reservae.Models.Interfaces;
+using Reservae.Repository.Extensions;
 
 namespace Reservae.Repository;
 
 public class SpaceRepository(ApplicationDbContext context)
     : BaseRepository<Space>(context), ISpaceRepository
 {
+    public Task<PagedResponseDto<Space>> GetActivePagedAsync(int page, int pageSize)
+        => DbSet.AsNoTracking()
+            .Where(space => space.IsActive)
+            .OrderByDescending(space => space.CreatedAt)
+            .ToPagedAsync(page, pageSize);
+
+    public Task<PagedResponseDto<Space>> GetForOwnerAsync(string ownerId, int page, int pageSize)
+        => DbSet.AsNoTracking()
+            .Where(space => space.OwnerId == ownerId)
+            .OrderByDescending(space => space.CreatedAt)
+            .ToPagedAsync(page, pageSize);
+
     public async Task<PagedResponseDto<Space>> SearchAsync(
         string term,
         int page,

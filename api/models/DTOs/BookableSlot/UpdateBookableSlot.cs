@@ -5,6 +5,7 @@ public class UpdateBookableSlotDTO
     public DateTime? StartsAt { get; init; }
     public DateTime? EndsAt { get; init; }
     public decimal? CustomPricePerSpot { get; init; }
+    public bool ClearCustomPricePerSpot { get; init; }
     public int? Capacity { get; init; }
     public bool? IsActive { get; init; }
 }

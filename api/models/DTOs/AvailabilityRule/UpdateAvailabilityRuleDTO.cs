@@ -10,6 +10,7 @@ public class UpdateAvailabilityRuleDTO
     public DateTime? ValidFrom { get; init; }
     public DateTime? ValidUntil { get; init; }
     public decimal? CustomPricePerSpot { get; init; }
+    public bool ClearCustomPricePerSpot { get; init; }
     public bool? IsActive { get; init; }
     public int? Capacity { get; init; }
     [Range(30, int.MaxValue, ErrorMessage = "A duração mínima de um horário é de 30 minutos.")]

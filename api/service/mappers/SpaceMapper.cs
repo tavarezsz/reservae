@@ -16,6 +16,7 @@ public static class SpaceMapper
             Title = entity.Title,
             Description = entity.Description,
             Category = entity.Category,
+            IsActive = entity.IsActive,
             CoverImagePath = entity.CoverImagePath
         };
     }
