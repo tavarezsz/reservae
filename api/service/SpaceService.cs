@@ -104,6 +104,27 @@ public class SpaceService(
         throw new NotImplementedException("Nâo implementado");
     }
 
+    public async Task<SpaceAvailabilityLimitDto> GetAvailabilityLimitAsync(
+        int spaceId,
+        CancellationToken cancellationToken = default)
+    {
+        _ = await spaceRepository.GetByIdAsync(spaceId)
+            ?? throw new ResourceNotFoundException($"Espaço com id {spaceId} não encontrado.");
+
+        var latestRule = await availabilityRuleRepository.GetLatestActiveValidUntilAsync(
+            spaceId, DateTime.UtcNow.Date, cancellationToken);
+        var latestStandalone = await bookableSlotRepository.GetLatestActiveStandaloneStartAsync(
+            spaceId, DateTime.UtcNow, cancellationToken);
+        var latest = new[] { latestRule, latestStandalone }.Max();
+
+        return new SpaceAvailabilityLimitDto
+        {
+            ValidUntil = latest is DateTime value
+                ? DateOnly.FromDateTime(value)
+                : null
+        };
+    }
+
     public async Task<IReadOnlyList<AvailableSlotDto>> GetAvailabilityAsync(
         int spaceId,
         DateOnly fromDate,

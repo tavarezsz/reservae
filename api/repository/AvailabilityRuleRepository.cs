@@ -10,6 +10,14 @@ namespace Reservae.Repository;
 public class AvailabilityRuleRepository(ApplicationDbContext context)
     : BaseRepository<AvailabilityRule>(context), IAvailabilityRuleRepository
 {
+    public Task<DateTime?> GetLatestActiveValidUntilAsync(
+        int spaceId,
+        DateTime fromUtc,
+        CancellationToken cancellationToken = default)
+        => DbSet.AsNoTracking()
+            .Where(rule => rule.SpaceId == spaceId && rule.IsActive && rule.ValidUntil >= fromUtc)
+            .MaxAsync(rule => (DateTime?)rule.ValidUntil, cancellationToken);
+
     public override async Task<AvailabilityRule?> GetByIdAsync(int id)
         => await DbSet
             .Include(rule => rule.Space)

@@ -11,6 +11,7 @@ import type {
   GetApiSpacesParams,
   GetApiSpacesSearchParams,
   GetApiSpacesSpaceIdAvailabilityParams,
+  SpaceAvailabilityLimitDto,
   SpaceDTO,
   SpaceDTOPagedResponseDto,
   UpdateSpaceDto
@@ -269,6 +270,40 @@ export const getApiSpacesSpaceIdAvailability = async (spaceId: number,
     throw err;
   }
   const data: AvailableSlotDto[] = body ? (contentType.includes('json') ? JSON.parse(body) : body) : {}
+  return data
+}
+
+
+export const getGetApiSpacesSpaceIdAvailabilityLimitUrl = (spaceId: number,) => {
+
+
+
+
+  return `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5144"}/api/spaces/${spaceId}/availability-limit`
+}
+
+export const getApiSpacesSpaceIdAvailabilityLimit = async (spaceId: number, options?: RequestInit): Promise<SpaceAvailabilityLimitDto> => {
+
+  const res = await fetch(getGetApiSpacesSpaceIdAvailabilityLimitUrl(spaceId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+)
+
+  const contentType = (res.headers.get('content-type') ?? '').toLowerCase();
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+  if (!res.ok) {
+
+    const err: globalThis.Error & {info?: any, status?: number} = new globalThis.Error();
+    const data  = body ? JSON.parse(body) : {}
+    err.info = data;
+    err.status = res.status;
+    throw err;
+  }
+  const data: SpaceAvailabilityLimitDto = body ? (contentType.includes('json') ? JSON.parse(body) : body) : {}
   return data
 }
 
