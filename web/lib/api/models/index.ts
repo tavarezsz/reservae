@@ -42,6 +42,7 @@ export * from './refreshRequest';
 export * from './registerRequest';
 export * from './resendConfirmationEmailRequest';
 export * from './resetPasswordRequest';
+export * from './spaceAvailabilityLimitDto';
 export * from './spaceDTO';
 export * from './spaceDTOPagedResponseDto';
 export * from './twoFactorRequest';

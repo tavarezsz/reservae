@@ -10,6 +10,14 @@ namespace Reservae.Repository;
 public class BookableSlotRepository(ApplicationDbContext context)
     : BaseRepository<BookableSlot>(context), IBookableSlotRepository
 {
+    public Task<DateTime?> GetLatestActiveStandaloneStartAsync(
+        int spaceId,
+        DateTime fromUtc,
+        CancellationToken cancellationToken = default)
+        => DbSet.AsNoTracking()
+            .Where(slot => slot.SpaceId == spaceId && slot.AvailabilityRuleId == null && slot.IsActive && slot.StartsAt >= fromUtc)
+            .MaxAsync(slot => (DateTime?)slot.StartsAt, cancellationToken);
+
     public override async Task<BookableSlot?> GetByIdAsync(int id)
         => await DbSet
             .Include(slot => slot.AvailabilityRule)
