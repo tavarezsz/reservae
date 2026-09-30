@@ -15,6 +15,8 @@ public class BookingRepository(ApplicationDbContext context)
             .Include(booking => booking.UserBooked)
             .Include(booking => booking.BookableSlot)
                 .ThenInclude(slot => slot.Bookings)
+            .Include(booking => booking.BookableSlot)
+                .ThenInclude(slot => slot.Space)
             .FirstOrDefaultAsync(booking => booking.Id == id);
 
     public override async Task<Booking> AddAsync(Booking booking)
@@ -69,6 +71,7 @@ public class BookingRepository(ApplicationDbContext context)
             .AsNoTracking()
             .Include(booking => booking.UserBooked)
             .Include(booking => booking.BookableSlot)
+                .ThenInclude(slot => slot.Space)
             .Where(booking => booking.BookableSlot.SpaceId == spaceId)
             .OrderBy(booking => booking.BookableSlot.StartsAt)
             .ToPagedAsync(page, pageSize, cancellationToken);
@@ -81,13 +84,24 @@ public class BookingRepository(ApplicationDbContext context)
         CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(userId);
+        var now = DateTime.UtcNow;
 
         return await DbSet
             .AsNoTracking()
             .Include(booking => booking.UserBooked)
             .Include(booking => booking.BookableSlot)
+                .ThenInclude(slot => slot.Space)
             .Where(booking => booking.UserBookedId == userId)
-            .OrderBy(booking => booking.BookableSlot.StartsAt)
+            .OrderByDescending(booking =>
+                booking.Status == BookingStatusEnum.Confirmado &&
+                booking.BookableSlot.EndsAt >= now)
+            .ThenBy(booking =>
+                booking.Status == BookingStatusEnum.Confirmado &&
+                booking.BookableSlot.EndsAt >= now
+                    ? (DateTime?)booking.BookableSlot.StartsAt
+                    : null)
+            .ThenByDescending(booking => booking.BookableSlot.StartsAt)
+            .ThenBy(booking => booking.Id)
             .ToPagedAsync(page, pageSize, cancellationToken);
     }
 
@@ -120,4 +134,3 @@ public class BookingRepository(ApplicationDbContext context)
                 "Não temos espaços disponíveis no horário informado.");
     }
 }
-

@@ -17,7 +17,14 @@ public static class BookingMapper
             BookableSlotId = entity.BookableSlotId,
             UserBookedName = userBookedName,
             Status = entity.Status,
-            Quantity = entity.Quantity
+            Quantity = entity.Quantity,
+            SpaceId = entity.BookableSlot?.SpaceId,
+            SpaceTitle = entity.BookableSlot?.Space?.Title,
+            SpaceAddress = entity.BookableSlot?.Space?.Address,
+            SpaceCategory = entity.BookableSlot?.Space?.Category,
+            SpaceCoverImagePath = entity.BookableSlot?.Space?.CoverImagePath,
+            StartsAt = entity.BookableSlot?.StartsAt,
+            EndsAt = entity.BookableSlot?.EndsAt
         };
     }
 

@@ -6,6 +6,7 @@
  * OpenAPI spec version: v1
  */
 import type { BookingStatusEnum } from './bookingStatusEnum';
+import type { CategoryEnum } from './categoryEnum';
 
 export interface BookingDto {
   id?: number;
@@ -14,4 +15,17 @@ export interface BookingDto {
   userBookedName: string | null;
   status?: BookingStatusEnum;
   quantity?: number;
+  /** @nullable */
+  spaceId?: number | null;
+  /** @nullable */
+  spaceTitle?: string | null;
+  /** @nullable */
+  spaceAddress?: string | null;
+  spaceCategory?: CategoryEnum;
+  /** @nullable */
+  spaceCoverImagePath?: string | null;
+  /** @nullable */
+  startsAt?: string | null;
+  /** @nullable */
+  endsAt?: string | null;
 }

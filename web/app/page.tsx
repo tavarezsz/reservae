@@ -18,7 +18,7 @@ export default function Home() {
         <p className="mt-12 mb-4 text-[10px] font-extrabold tracking-[.15em] text-muted">SEU RESERVAÊ</p>
         <nav className="flex flex-col gap-2">
           <a href="#espacos" aria-current="page" className="flex items-center gap-3 rounded-xl bg-brand px-4 py-3.5 text-sm font-bold text-white"><Icon name="grid" />Explorar espaços</a>
-          <button disabled className="flex items-center gap-3 rounded-xl px-4 py-3.5 text-left text-sm text-muted"><Icon name="calendar" /><span>Minhas reservas<span className="block text-[10px]">Em breve</span></span></button>
+          <Link href="/bookings" className="flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm text-muted hover:bg-sidebar-hover"><Icon name="calendar" />Minhas reservas</Link>
           <button disabled className="flex items-center gap-3 rounded-xl px-4 py-3.5 text-left text-sm text-muted"><Icon name="space" /><span>Área do anunciante<span className="block text-[10px]">Em breve</span></span></button>
         </nav>
         <p className="mt-auto border-t border-sidebar-line pt-5 text-xs leading-5 text-muted">Mais espaço.<br />Mais possibilidades.</p>
@@ -27,7 +27,7 @@ export default function Home() {
         <div className="mx-auto max-w-[1440px] px-5 sm:px-8 min-[960px]:px-10 min-[1280px]:px-12">
           <header className="mb-5 flex min-h-20 items-center justify-between border-b border-line sm:mb-8 min-[960px]:min-h-24">
             <Link href="/" className="text-[27px] font-extrabold tracking-[-.06em]" aria-label="reservaê — início">reservaê<span className="ml-4 hidden text-xs font-medium tracking-normal text-muted min-[960px]:inline">/ explore</span></Link>
-            <span className="flex items-center gap-2 text-xs font-bold text-muted"><Icon name="calendar" className="size-4" /><span>Minhas reservas<span className="ml-2 hidden rounded-full bg-surface-soft px-2 py-1 text-[9px] sm:inline">Em breve</span></span></span>
+            <Link href="/bookings" className="flex items-center gap-2 text-xs font-bold text-ink hover:text-brand"><Icon name="calendar" className="size-4" />Minhas reservas</Link>
           </header>
           <main id="conteudo" className="pb-10 sm:pb-14">
             <HomeContent />
