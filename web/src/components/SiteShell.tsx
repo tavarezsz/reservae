@@ -1,14 +1,17 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { Icon } from "./atoms/Icon";
+import { AccountMenu } from "./AccountMenu";
+import { currentUser } from "@/src/lib/api-auth";
 
-export function SiteShell({
+export async function SiteShell({
   children,
   active = "explore",
 }: {
   children: ReactNode;
   active?: "explore" | "bookings" | "advertiser";
 }) {
+  const user = await currentUser();
   return (
     <div className="min-h-screen text-ink">
       <a
@@ -51,21 +54,18 @@ export function SiteShell({
             Área do anunciante
           </Link>
         </nav>
-        <p className="mt-auto border-t border-sidebar-line pt-5 text-xs leading-5 text-muted">
-          Mais espaço.
-          <br />
-          Mais possibilidades.
-        </p>
+        <AccountMenu user={user} variant="sidebar" />
       </aside>
       <div className="min-[960px]:ml-[232px]">
         <div className="mx-auto max-w-[1440px] px-5 sm:px-8 min-[960px]:px-10 min-[1280px]:px-12">
-          <header className="mb-5 flex min-h-20 items-center justify-between border-b border-line sm:mb-8 min-[960px]:min-h-24">
+          <header className="mb-5 grid min-h-20 grid-cols-[1fr_auto_1fr] items-center gap-2 border-b border-line sm:mb-8 min-[960px]:min-h-24">
             <Link
               href="/#espacos"
-              className="flex items-center gap-2 text-sm font-bold"
+              aria-label="Explorar espaços"
+              className="flex items-center gap-2 text-xs font-bold sm:text-sm"
             >
               <Icon name="arrow" className="rotate-180" />
-              Explorar
+              <span className="hidden sm:inline">Explorar</span>
             </Link>
             <Link
               href="/"
@@ -73,6 +73,7 @@ export function SiteShell({
             >
               reservaê
             </Link>
+            <div className="justify-self-end"><AccountMenu user={user} variant="header" /></div>
           </header>
           <main id="conteudo" className="pb-32 xl:pb-14">
             {children}

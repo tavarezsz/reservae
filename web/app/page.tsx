@@ -1,6 +1,8 @@
 import { HomeContent } from "@/src/components/HomeContent";
 import { Icon } from "@/src/components/atoms/Icon";
 import Link from "next/link";
+import { AccountMenu } from "@/src/components/AccountMenu";
+import { currentUser } from "@/src/lib/api-auth";
 
 const steps = [
   ["Encontre seu espaço", "Lugares para o que você precisa."],
@@ -8,7 +10,8 @@ const steps = [
   ["Confirme sua reserva", "Agora é só aproveitar seu espaço."],
 ];
 
-export default function Home() {
+export default async function Home() {
+  const user = await currentUser();
   return (
     <div className="min-h-screen text-ink">
       <a href="#conteudo" className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:rounded-lg focus:bg-brand focus:p-3 focus:text-white">Ir para o conteúdo</a>
@@ -20,13 +23,13 @@ export default function Home() {
           <Link href="/bookings" className="flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm text-muted hover:bg-sidebar-hover"><Icon name="calendar" />Minhas reservas</Link>
           <Link href="/advertiser" className="flex items-center gap-3 rounded-xl px-4 py-3.5 text-left text-sm text-muted hover:bg-sidebar-hover"><Icon name="space" />Área do anunciante</Link>
         </nav>
-        <p className="mt-auto border-t border-sidebar-line pt-5 text-xs leading-5 text-muted">Mais espaço.<br />Mais possibilidades.</p>
+        <AccountMenu user={user} variant="sidebar" />
       </aside>
       <div className="min-[960px]:ml-[232px]">
         <div className="mx-auto max-w-[1440px] px-5 sm:px-8 min-[960px]:px-10 min-[1280px]:px-12">
           <header className="mb-5 flex min-h-20 items-center justify-between border-b border-line sm:mb-8 min-[960px]:min-h-24">
             <Link href="/" className="text-[27px] font-extrabold tracking-[-.06em]" aria-label="reservaê — início">reservaê<span className="ml-4 hidden text-xs font-medium tracking-normal text-muted min-[960px]:inline">/ explore</span></Link>
-            <Link href="/bookings" className="flex items-center gap-2 text-xs font-bold text-ink hover:text-brand"><Icon name="calendar" className="size-4" />Minhas reservas</Link>
+            <div className="flex items-center gap-2 sm:gap-5"><Link href="/bookings" className="flex items-center gap-2 text-xs font-bold text-ink hover:text-brand"><Icon name="calendar" className="size-4" /><span className="hidden sm:inline">Minhas reservas</span></Link><AccountMenu user={user} variant="header" /></div>
           </header>
           <main id="conteudo" className="pb-10 sm:pb-14">
             <HomeContent />
