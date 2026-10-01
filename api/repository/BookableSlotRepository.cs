@@ -10,6 +10,14 @@ namespace Reservae.Repository;
 public class BookableSlotRepository(ApplicationDbContext context)
     : BaseRepository<BookableSlot>(context), IBookableSlotRepository
 {
+    public Task<PagedResponseDto<BookableSlot>> GetStandaloneForSpaceAsync(int spaceId, int page, int pageSize)
+        => DbSet.AsNoTracking()
+            .Include(slot => slot.Bookings)
+            .Where(slot => slot.SpaceId == spaceId && slot.AvailabilityRuleId == null)
+            .OrderByDescending(slot => slot.StartsAt)
+            .ThenByDescending(slot => slot.Id)
+            .ToPagedAsync(page, pageSize);
+
     public Task<DateTime?> GetLatestActiveStandaloneStartAsync(
         int spaceId,
         DateTime fromUtc,

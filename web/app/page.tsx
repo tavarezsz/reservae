@@ -14,8 +14,7 @@ export default function Home() {
       <a href="#conteudo" className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:rounded-lg focus:bg-brand focus:p-3 focus:text-white">Ir para o conteúdo</a>
       <aside className="fixed inset-y-0 left-0 hidden w-[232px] flex-col border-r border-sidebar-line bg-sidebar px-6 py-9 min-[960px]:flex" aria-label="Navegação principal">
         <Link href="/" aria-label="reservaê — início" className="text-[32px] font-extrabold tracking-[-.06em]">reservaê</Link>
-        <p className="mt-2 text-[11px] text-muted">Um lugar para cada plano.</p>
-        <p className="mt-12 mb-4 text-[10px] font-extrabold tracking-[.15em] text-muted">SEU RESERVAÊ</p>
+        <p className="mt-2 text-[11px] text-muted mb-4">Um lugar para cada plano.</p>
         <nav className="flex flex-col gap-2">
           <a href="#espacos" aria-current="page" className="flex items-center gap-3 rounded-xl bg-brand px-4 py-3.5 text-sm font-bold text-white"><Icon name="grid" />Explorar espaços</a>
           <Link href="/bookings" className="flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm text-muted hover:bg-sidebar-hover"><Icon name="calendar" />Minhas reservas</Link>

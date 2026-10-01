@@ -26,6 +26,7 @@ export * from './forgotPasswordRequest';
 export * from './getApiAvailabilityRuleParams';
 export * from './getApiAvailabilityRuleSpaceSpaceIdParams';
 export * from './getApiBookableSlotsParams';
+export * from './getApiBookableSlotsSpaceSpaceIdStandaloneParams';
 export * from './getApiBookingsSpaceSpaceIdParams';
 export * from './getApiBookingsUserUserIdParams';
 export * from './getApiSpacesOwnerOwnerIdParams';

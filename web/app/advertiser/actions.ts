@@ -102,8 +102,7 @@ export async function uploadCover(id: number, previous: FormState, formData: For
   } catch (error) { return apiFailure(previous, values, error); }
 }
 
-export async function saveRule(spaceId: number, ruleId: number | null, previous: FormState, formData: FormData): Promise<FormState> {
-  const values = valuesOf(formData);
+function ruleFields(values: Record<string, string>) {
   const errors: Record<string, string> = {};
   const start = field(values, "startTime"), end = field(values, "endTime");
   if (!start || !end || end <= start) errors.endTime = "O fim deve ser posterior ao início.";
@@ -112,26 +111,65 @@ export async function saveRule(spaceId: number, ruleId: number | null, previous:
   if (!Number.isInteger(Number(values.slotDurationMinutes)) || Number(values.slotDurationMinutes) < 30) errors.slotDurationMinutes = "Mínimo de 30 minutos.";
   const amount = price(values, "customPricePerSpot");
   if (amount !== null && (!Number.isFinite(amount) || amount < 0)) errors.customPricePerSpot = "Informe um preço válido.";
+  return { errors, amount, fields: {
+    startTime: `${start}:00`, endTime: `${end}:00`,
+    validFrom: dateUtc(values.validFrom), validUntil: dateUtc(values.validUntil),
+    capacity: Number(values.capacity), slotDurationMinutes: Number(values.slotDurationMinutes),
+    customPricePerSpot: amount, isActive: values.isActive === "on",
+  } };
+}
+
+const weekdays = ["segunda", "terça", "quarta", "quinta", "sexta", "sábado", "domingo"];
+
+export async function createRules(spaceId: number, previous: FormState, formData: FormData): Promise<FormState> {
+  const values = valuesOf(formData);
+  const { errors, fields } = ruleFields(values);
+  const days = weekdays.map((_, index) => index).filter(index => values[`day${index}`] === "on");
+  if (!days.length) errors.days = "Selecione pelo menos um dia da semana.";
   if (Object.keys(errors).length) return failure(previous, values, "Revise os campos destacados.", errors);
   try {
     await ownedSpace(spaceId);
-    if (ruleId !== null && !(await spaceRules(spaceId)).some(rule => rule.id === ruleId)) throw new ApiError(404, null);
-    const common = {
-      dayOfTheWeek: Number(values.dayOfTheWeek) as DayOfTheWeekEnum,
-      startTime: `${start}:00`, endTime: `${end}:00`,
-      validFrom: dateUtc(values.validFrom), validUntil: dateUtc(values.validUntil),
-      capacity: Number(values.capacity), slotDurationMinutes: Number(values.slotDurationMinutes),
-      customPricePerSpot: amount, isActive: values.isActive === "on",
-    };
-    if (ruleId === null) {
-      const body = { ...common, spaceId } satisfies CreateAvailabilityRuleDTO;
-      await api<AvailabilityRuleDto>("/api/availability-rule", { method: "POST", ...json(body) });
-    } else {
-      const body = { ...common, clearCustomPricePerSpot: amount === null } satisfies UpdateAvailabilityRuleDTO;
-      await api<AvailabilityRuleDto>(`/api/availability-rule/${ruleId}`, { method: "PUT", ...json(body) });
-    }
+    const results = await Promise.all(days.map(async day => {
+      const body = { ...fields, spaceId, dayOfTheWeek: day as DayOfTheWeekEnum } satisfies CreateAvailabilityRuleDTO;
+      try {
+        await api<AvailabilityRuleDto>("/api/availability-rule", { method: "POST", ...json(body) });
+        return { day, created: true };
+      } catch {
+        return { day, created: false };
+      }
+    }));
     revalidatePath(`/advertiser/spaces/${spaceId}/schedule`); revalidatePath("/advertiser/occupancy");
-    return success(previous, values, ruleId === null ? "Regra criada." : "Regra atualizada.");
+    const failed = results.filter(result => !result.created).map(result => result.day);
+    if (failed.length) {
+      const retryValues = { ...values };
+      for (const { day, created } of results) if (created) delete retryValues[`day${day}`];
+      const completed = results.length - failed.length;
+      return failure(previous, retryValues,
+        `${completed} de ${results.length} ${results.length === 1 ? "regra criada" : "regras criadas"}. Falha em ${failed.map(day => weekdays[day]).join(", ")}. Tente novamente para os dias que continuam selecionados.`,
+        { days: "Os dias criados foram desmarcados para evitar duplicação." });
+    }
+    const nextValues = { ...values };
+    for (const day of days) delete nextValues[`day${day}`];
+    return success(previous, nextValues, `${results.length} ${results.length === 1 ? "regra criada" : "regras criadas"}.`);
+  } catch (error) { return apiFailure(previous, values, error); }
+}
+
+export async function updateRule(spaceId: number, ruleId: number, previous: FormState, formData: FormData): Promise<FormState> {
+  const values = valuesOf(formData);
+  const { errors, amount, fields } = ruleFields(values);
+  const day = Number(values.dayOfTheWeek);
+  if (!Number.isInteger(day) || day < 0 || day > 6) errors.dayOfTheWeek = "Selecione um dia válido.";
+  if (Object.keys(errors).length) return failure(previous, values, "Revise os campos destacados.", errors);
+  try {
+    await ownedSpace(spaceId);
+    if (!(await spaceRules(spaceId)).some(rule => rule.id === ruleId)) throw new ApiError(404, null);
+    const body = {
+      ...fields, dayOfTheWeek: day as DayOfTheWeekEnum,
+      clearCustomPricePerSpot: amount === null,
+    } satisfies UpdateAvailabilityRuleDTO;
+    await api<AvailabilityRuleDto>(`/api/availability-rule/${ruleId}`, { method: "PUT", ...json(body) });
+    revalidatePath(`/advertiser/spaces/${spaceId}/schedule`); revalidatePath("/advertiser/occupancy");
+    return success(previous, values, "Regra atualizada.");
   } catch (error) { return apiFailure(previous, values, error); }
 }
 

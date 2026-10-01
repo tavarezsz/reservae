@@ -12,6 +12,19 @@ public class BookableSlotService(
 
 )
 {
+    public async Task<PagedResponseDto<BookableSlotDTO>> GetStandaloneForSpaceAsync(int spaceId, int page, int pageSize)
+    {
+        _ = await spaceRepository.GetByIdAsync(spaceId)
+            ?? throw new ResourceNotFoundException("Espaço não encontrado.");
+
+        var paged = await bookableSlotRepository.GetStandaloneForSpaceAsync(spaceId, page, pageSize);
+        return new PagedResponseDto<BookableSlotDTO>
+        {
+            Items = paged.Items.Select(slot => slot.ToDto()),
+            TotalCount = paged.TotalCount
+        };
+    }
+
     public async Task<PagedResponseDto<BookableSlotDTO>> GetPagedAsync(int page, int pageSize)
     {
         var paged = await bookableSlotRepository.GetPagedAsync(page, pageSize);

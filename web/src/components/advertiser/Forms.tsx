@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 import type { AvailabilityRuleDto, BookableSlotDTO, SpaceDTO } from "@/lib/api/models";
 import { categoryLabels } from "@/src/constants/CategoryLabels";
-import { createSpace, saveRule, saveSlot, updateSpace, uploadCover, type FormState } from "@/app/advertiser/actions";
+import { createRules, createSpace, saveSlot, updateRule, updateSpace, uploadCover, type FormState } from "@/app/advertiser/actions";
 
 const emptyFormState: FormState = { values: {}, errors: {}, message: "", success: false, revision: 0 };
 
@@ -55,20 +55,11 @@ export function CoverForm({ spaceId }: { spaceId: number }) {
 }
 
 const weekdays = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
+const shortWeekdays = ["SEG", "TER", "QUA", "QUI", "SEX", "SÁB", "DOM"];
 
-export function RuleForm({ spaceId, rule }: { spaceId: number; rule?: AvailabilityRuleDto }) {
-  const initial: FormState = { ...emptyFormState, values: rule ? {
-    dayOfTheWeek: String(rule.dayOfTheWeek ?? 0), startTime: rule.startTime?.slice(0, 5) ?? "", endTime: rule.endTime?.slice(0, 5) ?? "",
-    validFrom: rule.validFrom?.slice(0, 10) ?? "", validUntil: rule.validUntil?.slice(0, 10) ?? "",
-    capacity: String(rule.capacity ?? 1), slotDurationMinutes: String(rule.slotDurationMinutes ?? 60),
-    customPricePerSpot: rule.customPricePerSpot == null ? "" : String(rule.customPricePerSpot), isActive: rule.isActive ? "on" : "",
-  } : { dayOfTheWeek: "0", slotDurationMinutes: "60", isActive: "on" } };
-  const [rawState, action, pending] = useActionState(saveRule.bind(null, spaceId, rule?.id ?? null), initial);
-  const state = { ...initial, ...rawState, values: rawState?.values ?? initial.values, errors: rawState?.errors ?? {} };
+function RuleFields({ state }: { state: FormState }) {
   const values = state.values;
-  return <form action={action} key={state.revision} className="grid max-w-2xl gap-5 sm:grid-cols-2" noValidate>
-    <div className="sm:col-span-2"><Feedback state={state} /></div>
-    <div><label htmlFor="dayOfTheWeek" className={labelClass}>Dia da semana</label><select id="dayOfTheWeek" name="dayOfTheWeek" defaultValue={values.dayOfTheWeek ?? "0"} className={inputClass}>{weekdays.map((day, index) => <option key={day} value={index}>{day}</option>)}</select></div>
+  return <>
     <div><label htmlFor="slotDurationMinutes" className={labelClass}>Duração de cada horário (min)</label><input id="slotDurationMinutes" name="slotDurationMinutes" type="number" min="30" step="1" required defaultValue={values.slotDurationMinutes ?? "60"} className={inputClass} /><ErrorText state={state} name="slotDurationMinutes" /></div>
     <div><label htmlFor="validFrom" className={labelClass}>A partir de</label><input id="validFrom" name="validFrom" type="date" required defaultValue={values.validFrom ?? ""} className={inputClass} /><ErrorText state={state} name="validFrom" /></div>
     <div><label htmlFor="validUntil" className={labelClass}>Até</label><input id="validUntil" name="validUntil" type="date" required defaultValue={values.validUntil ?? ""} className={inputClass} /><ErrorText state={state} name="validUntil" /></div>
@@ -77,7 +68,43 @@ export function RuleForm({ spaceId, rule }: { spaceId: number; rule?: Availabili
     <div><label htmlFor="rule-capacity" className={labelClass}>Capacidade por horário</label><input id="rule-capacity" name="capacity" type="number" min="1" step="1" required defaultValue={values.capacity ?? ""} className={inputClass} /><ErrorText state={state} name="capacity" /></div>
     <div><label htmlFor="rule-price" className={labelClass}>Preço personalizado (R$) · opcional</label><input id="rule-price" name="customPricePerSpot" type="number" min="0" step="0.01" defaultValue={values.customPricePerSpot ?? ""} placeholder="Usar preço do espaço" className={inputClass} /><ErrorText state={state} name="customPricePerSpot" /></div>
     <label className="flex items-center gap-3 text-sm font-semibold sm:col-span-2"><input type="checkbox" name="isActive" defaultChecked={values.isActive === "on"} className="size-5 accent-brand" />Regra ativa</label>
-    <div className="sm:col-span-2"><Submit pending={pending} label={rule ? "Salvar regra" : "Adicionar regra"} /></div>
+  </>;
+}
+
+export function CreateRuleForm({ spaceId }: { spaceId: number }) {
+  const initial: FormState = { ...emptyFormState, values: {
+    day0: "on", day1: "on", day2: "on", day3: "on", day4: "on",
+    slotDurationMinutes: "60", isActive: "on",
+  } };
+  const [rawState, action, pending] = useActionState(createRules.bind(null, spaceId), initial);
+  const state = { ...initial, ...rawState, values: rawState?.values ?? initial.values, errors: rawState?.errors ?? {} };
+  return <form action={action} key={state.revision} className="grid max-w-2xl gap-5 sm:grid-cols-2" noValidate>
+    <div className="sm:col-span-2"><Feedback state={state} /></div>
+    <fieldset className="sm:col-span-2">
+      <legend className={labelClass}>Repetir toda semana</legend>
+      <div className="mt-3 grid grid-cols-7 gap-1 sm:gap-2">{shortWeekdays.map((day, index) => <label key={day} className="cursor-pointer"><input type="checkbox" name={`day${index}`} defaultChecked={state.values[`day${index}`] === "on"} className="peer sr-only" /><span className="flex min-h-11 items-center justify-center rounded-lg border border-line text-[10px] font-extrabold text-ink transition peer-checked:border-brand peer-checked:bg-brand peer-checked:text-white peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-focus sm:text-xs">{day}</span></label>)}</div>
+      <ErrorText state={state} name="days" />
+    </fieldset>
+    <RuleFields state={state} />
+    <div className="sm:col-span-2"><Submit pending={pending} label="Adicionar regras" /></div>
+  </form>;
+}
+
+export function EditRuleForm({ spaceId, rule }: { spaceId: number; rule: AvailabilityRuleDto }) {
+  const initial: FormState = { ...emptyFormState, values: {
+    dayOfTheWeek: String(rule.dayOfTheWeek ?? 0), startTime: rule.startTime?.slice(0, 5) ?? "", endTime: rule.endTime?.slice(0, 5) ?? "",
+    validFrom: rule.validFrom?.slice(0, 10) ?? "", validUntil: rule.validUntil?.slice(0, 10) ?? "",
+    capacity: String(rule.capacity ?? 1), slotDurationMinutes: String(rule.slotDurationMinutes ?? 60),
+    customPricePerSpot: rule.customPricePerSpot == null ? "" : String(rule.customPricePerSpot), isActive: rule.isActive ? "on" : "",
+  } };
+  const [rawState, action, pending] = useActionState(updateRule.bind(null, spaceId, rule.id!), initial);
+  const state = { ...initial, ...rawState, values: rawState?.values ?? initial.values, errors: rawState?.errors ?? {} };
+  const values = state.values;
+  return <form action={action} key={state.revision} className="grid max-w-2xl gap-5 sm:grid-cols-2" noValidate>
+    <div className="sm:col-span-2"><Feedback state={state} /></div>
+    <div className="sm:col-span-2"><label htmlFor="dayOfTheWeek" className={labelClass}>Dia da semana</label><select id="dayOfTheWeek" name="dayOfTheWeek" defaultValue={values.dayOfTheWeek ?? "0"} className={inputClass}>{weekdays.map((day, index) => <option key={day} value={index}>{day}</option>)}</select><ErrorText state={state} name="dayOfTheWeek" /></div>
+    <RuleFields state={state} />
+    <div className="sm:col-span-2"><Submit pending={pending} label="Salvar regra" /></div>
   </form>;
 }
 

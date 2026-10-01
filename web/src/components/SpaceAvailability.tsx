@@ -11,12 +11,14 @@ import { AvailabilityCalendar } from "./AvailabilityCalendar";
 
 type Period = { anchor: string; monday: string; slots: AvailableSlotDto[] };
 const weekdays = ["SEG", "TER", "QUA", "QUI", "SEX", "SÁB", "DOM"];
+const SLOTS_PER_PAGE = 10;
 
 export function SpaceAvailability({ space, spaceId }: { space: SpaceDTO; spaceId: number }) {
   const [request, setRequest] = useState({ date: "", revision: 0 });
   const [period, setPeriod] = useState<Period | null>(null);
   const [selectedDay, setSelectedDay] = useState("");
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
+  const [slotPage, setSlotPage] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [bookingOpen, setBookingOpen] = useState(false);
@@ -46,6 +48,7 @@ export function SpaceAvailability({ space, spaceId }: { space: SpaceDTO; spaceId
       setPeriod({ anchor, monday, slots });
       setSelectedDay(anchor);
       setSelectedSlot(null);
+      setSlotPage(0);
       setError(false);
     }).catch(() => {
       if (!controller.signal.aborted) setError(true);
@@ -58,6 +61,7 @@ export function SpaceAvailability({ space, spaceId }: { space: SpaceDTO; spaceId
   function chooseDate(date: string) {
     if (!date || date < dateKey(new Date()) || (limit.validUntil && date > limit.validUntil)) return;
     setSelectedSlot(null);
+    setSlotPage(0);
     if (!period || weekStart(date) !== period.monday) {
       setLoading(true);
       setError(false);
@@ -77,6 +81,9 @@ export function SpaceAvailability({ space, spaceId }: { space: SpaceDTO; spaceId
   const day = selectedDay || period?.anchor || today;
   const slotsForDay = (period?.slots ?? []).filter((slot) => slotDate(slot) === day).sort((a, b) => (a.startsAt ?? "").localeCompare(b.startsAt ?? ""));
   const bookableSlots = slotsForDay.filter(canBook);
+  const pageCount = Math.ceil(bookableSlots.length / SLOTS_PER_PAGE);
+  const currentPage = Math.min(slotPage, Math.max(0, pageCount - 1));
+  const visibleSlots = bookableSlots.slice(currentPage * SLOTS_PER_PAGE, (currentPage + 1) * SLOTS_PER_PAGE);
   const selected = bookableSlots.find((slot) => slotKey(slot) === selectedSlot);
   const futureDays = period ? Array.from(new Set(period.slots.filter(canBook).map(slotDate))).filter((value) => value > addDays(monday, 6) && (!limit.validUntil || value <= limit.validUntil)).slice(0, 2) : [];
 
@@ -95,7 +102,14 @@ export function SpaceAvailability({ space, spaceId }: { space: SpaceDTO; spaceId
           <div className="mt-6"><h3 className="text-sm font-extrabold capitalize">{dateLabel(day)}</h3><p className="mt-2 text-xs text-muted">Horários locais · Escolha uma faixa disponível</p></div>
           {loading && <p role="status" className="py-10 text-center text-sm text-muted">Carregando horários…</p>}
           {error && <div role="alert" className="mt-5 rounded-xl bg-error-surface p-4 text-sm text-error">Não foi possível consultar os horários.<button type="button" onClick={retry} className="ml-2 font-bold underline">Tentar novamente</button></div>}
-          {!loading && !error && <div className="mt-5 space-y-2" role="group" aria-label="Horários disponíveis">{bookableSlots.length ? bookableSlots.map((slot) => <button key={slotKey(slot)} type="button" aria-pressed={selectedSlot === slotKey(slot)} onClick={() => setSelectedSlot(slotKey(slot))} className={`flex min-h-20 w-full items-center justify-between gap-2 rounded-xl border bg-white p-4 text-left transition focus-visible:outline-2 focus-visible:outline-focus ${selectedSlot === slotKey(slot) ? "border-brand ring-1 ring-brand" : "border-line hover:border-line-strong"}`}><span className="min-w-0"><strong className="block text-sm">{timeLabel(slot.startsAt!)} – {timeLabel(slot.endsAt!)}</strong><small className="mt-2 block text-[11px] text-muted">{slot.availableQuantity} {slot.availableQuantity === 1 ? "vaga disponível" : "vagas disponíveis"}</small></span><span className="ml-auto shrink-0 text-right"><strong className="block text-sm">{money(slot.pricePerSpot ?? space.pricePerSpot ?? 0)}</strong><small className="text-[11px] text-muted">por vaga</small></span><span aria-hidden="true" className={`size-4 shrink-0 rounded-full border ${selectedSlot === slotKey(slot) ? "border-brand bg-brand" : "border-line"}`} /></button>) : <div className="rounded-xl bg-white px-4 py-8 text-center"><Icon name="calendar" className="mx-auto text-muted" /><h4 className="mt-3 text-sm font-bold">Sem horários neste dia</h4><p className="mt-2 text-xs text-muted">Escolha outra data para continuar.</p></div>}</div>}
+          {!loading && !error && <div id="slot-list" className="mt-5 space-y-2" role="group" aria-label="Horários disponíveis">{bookableSlots.length ? visibleSlots.map((slot) => <button key={slotKey(slot)} type="button" aria-pressed={selectedSlot === slotKey(slot)} onClick={() => setSelectedSlot(slotKey(slot))} className={`flex min-h-20 w-full items-center justify-between gap-2 rounded-xl border bg-white p-4 text-left transition focus-visible:outline-2 focus-visible:outline-focus ${selectedSlot === slotKey(slot) ? "border-brand ring-1 ring-brand" : "border-line hover:border-line-strong"}`}><span className="min-w-0"><strong className="block text-sm">{timeLabel(slot.startsAt!)} – {timeLabel(slot.endsAt!)}</strong><small className="mt-2 block text-[11px] text-muted">{slot.availableQuantity} {slot.availableQuantity === 1 ? "vaga disponível" : "vagas disponíveis"}</small></span><span className="ml-auto shrink-0 text-right"><strong className="block text-sm">{money(slot.pricePerSpot ?? space.pricePerSpot ?? 0)}</strong><small className="text-[11px] text-muted">por vaga</small></span><span aria-hidden="true" className={`size-4 shrink-0 rounded-full border ${selectedSlot === slotKey(slot) ? "border-brand bg-brand" : "border-line"}`} /></button>) : <div className="rounded-xl bg-white px-4 py-8 text-center"><Icon name="calendar" className="mx-auto text-muted" /><h4 className="mt-3 text-sm font-bold">Sem horários neste dia</h4><p className="mt-2 text-xs text-muted">Escolha outra data para continuar.</p></div>}</div>}
+          {!loading && !error && pageCount > 1 && <nav className="mt-4 flex items-center justify-between gap-3" aria-label="Páginas de horários">
+            <span className="text-xs text-muted" aria-live="polite">{currentPage * SLOTS_PER_PAGE + 1}–{Math.min((currentPage + 1) * SLOTS_PER_PAGE, bookableSlots.length)} de {bookableSlots.length} horários</span>
+            <div className="flex items-center gap-2">
+              <button type="button" aria-label="Página anterior de horários" aria-controls="slot-list" disabled={currentPage === 0} onClick={() => { setSlotPage(currentPage - 1); setSelectedSlot(null); }} className="flex size-11 items-center justify-center rounded-xl border border-line bg-white text-brand hover:border-line-strong disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-focus"><Icon name="arrow" className="size-4 rotate-180" /></button>
+              <button type="button" aria-label="Próxima página de horários" aria-controls="slot-list" disabled={currentPage >= pageCount - 1} onClick={() => { setSlotPage(currentPage + 1); setSelectedSlot(null); }} className="flex size-11 items-center justify-center rounded-xl border border-line bg-white text-brand hover:border-line-strong disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-focus"><Icon name="arrow" className="size-4" /></button>
+            </div>
+          </nav>}
           <p className="mt-4 flex items-center gap-2 rounded-xl bg-surface-hint p-3 text-[11px] text-brand"><Icon name="calendar" className="size-4" />Cada reserva vale para a faixa escolhida.</p>
           <p className="mt-4 text-[11px] text-muted">Preço informativo. Sem pagamento no app.</p>
         </div>

@@ -24,10 +24,7 @@ export function SiteShell({
         <Link href="/" className="text-[32px] font-extrabold tracking-[-.06em]">
           reservaê
         </Link>
-        <p className="mt-2 text-[11px] text-muted">Um lugar para cada plano.</p>
-        <p className="mt-12 mb-4 text-[10px] font-extrabold tracking-[.15em] text-muted">
-          SEU RESERVAÊ
-        </p>
+        <p className="mt-2 text-[11px] text-muted mb-4">Um lugar para cada plano.</p>
         <nav className="flex flex-col gap-2">
           <Link
             href="/#espacos"

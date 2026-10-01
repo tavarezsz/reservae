@@ -1,9 +1,11 @@
 using Reservae.Models;
+using Reservae.Models.DTOs;
 
 namespace Reservae.Models.Interfaces;
 
 public interface IBookableSlotRepository : IBaseRepository<BookableSlot>
 {
+    Task<PagedResponseDto<BookableSlot>> GetStandaloneForSpaceAsync(int spaceId, int page, int pageSize);
     Task<DateTime?> GetLatestActiveStandaloneStartAsync(
         int spaceId,
         DateTime fromUtc,

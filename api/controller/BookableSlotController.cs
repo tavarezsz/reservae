@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Reservae.Models.DTOs;
 using Reservae.Service;
+using System.ComponentModel.DataAnnotations;
 
 namespace Reservae.Controllers;
 
@@ -24,6 +25,13 @@ public class BookableSlotController(BookableSlotService bookableSlotService)
         var result = await bookableSlotService.GetByIdAsync(id);
         return Ok(result);
     }
+
+    [HttpGet("space/{spaceId:int}/standalone")]
+    public async Task<ActionResult<PagedResponseDto<BookableSlotDTO>>> GetStandaloneForSpace(
+        int spaceId,
+        [FromQuery, Range(1, int.MaxValue)] int page = 1,
+        [FromQuery, Range(1, 100)] int pageSize = 10)
+        => Ok(await bookableSlotService.GetStandaloneForSpaceAsync(spaceId, page, pageSize));
 
     [HttpPost]
     [ProducesResponseType<BookableSlotDTO>(StatusCodes.Status201Created)]

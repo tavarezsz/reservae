@@ -1,4 +1,4 @@
-import type { AvailabilityRuleDto, AvailableSlotDto, BookingDto, SpaceDTO } from "@/lib/api/models";
+import type { AvailabilityRuleDto, AvailableSlotDto, BookableSlotDTO, BookingDto, SpaceDTO } from "@/lib/api/models";
 
 const baseUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5144";
 
@@ -45,6 +45,11 @@ export async function ownedSpace(id: number): Promise<SpaceDTO> {
 export async function spaceRules(id: number): Promise<AvailabilityRuleDto[]> {
   await ownedSpace(id);
   return allPages<AvailabilityRuleDto>(`/api/availability-rule/space/${id}`);
+}
+
+export async function standaloneSlots(id: number): Promise<BookableSlotDTO[]> {
+  await ownedSpace(id);
+  return allPages<BookableSlotDTO>(`/api/bookable-slots/space/${id}/standalone`);
 }
 
 export async function spaceBookings(id: number): Promise<BookingDto[]> {
