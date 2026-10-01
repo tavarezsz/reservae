@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { AvailableSlotDto, BookingDto, SpaceDTO } from "@/lib/api/models";
-import { advertiserUserId, ownerSpaces, spaceBookings, spaceSlots } from "@/src/lib/advertiser";
+import { ApiError, ownerSpaces, spaceBookings, spaceSlots } from "@/src/lib/advertiser";
 import { dateKey } from "@/src/lib/availability";
 
 type Entry = { space: SpaceDTO; slot: AvailableSlotDto };
@@ -9,7 +9,9 @@ export default async function OccupancyPage({ searchParams }: { searchParams: Pr
   const query = await searchParams;
   const today = dateKey(new Date());
   const date = query.date && /^\d{4}-\d{2}-\d{2}$/.test(query.date) ? query.date : today;
-  const spaces = await ownerSpaces().catch(() => null);
+  const result = await ownerSpaces().then(spaces => ({ spaces, authRequired: false }))
+    .catch((error: unknown) => ({ spaces: null, authRequired: error instanceof ApiError && error.status === 401 }));
+  const { spaces, authRequired } = result;
   const selectedSpace = query.space && spaces?.some(space => space.id === Number(query.space)) ? Number(query.space) : null;
   const selected = spaces?.filter(space => selectedSpace === null || space.id === selectedSpace) ?? [];
   let entries: Entry[] | null = null;
@@ -38,8 +40,8 @@ export default async function OccupancyPage({ searchParams }: { searchParams: Pr
       <label className="flex items-center gap-3 text-sm sm:col-span-2"><input type="checkbox" name="booked" value="1" defaultChecked={query.booked === "1"} className="size-5 accent-brand" />Somente horários com reservas</label>
       <button className="min-h-11 rounded-xl bg-brand px-5 text-sm font-bold text-white sm:w-fit">Aplicar filtros</button>
     </form>
-    {!advertiserUserId && <p role="alert" className="mt-8 rounded-xl bg-error-surface p-5 text-sm text-error">Configure o usuário de desenvolvimento para ver a ocupação.</p>}
-    {advertiserUserId && !entries && <p role="alert" className="mt-8 rounded-xl bg-error-surface p-5 text-sm text-error">Não foi possível carregar a agenda. Atualize a página para tentar novamente.</p>}
+    {authRequired && <p role="alert" className="mt-8 rounded-xl bg-error-surface p-5 text-sm text-error">Entre na sua conta para ver a ocupação. <Link href="/login?next=/advertiser/occupancy" className="font-bold underline">Entrar</Link></p>}
+    {!authRequired && !entries && <p role="alert" className="mt-8 rounded-xl bg-error-surface p-5 text-sm text-error">Não foi possível carregar a agenda. Atualize a página para tentar novamente.</p>}
     {entries && <>
       <div className="mt-8 flex max-w-2xl gap-7 rounded-2xl bg-ink p-6 text-white"><div><strong className="text-2xl text-brand-accent">{reserved}</strong><p className="mt-1 text-xs">vagas reservadas</p></div><div className="border-l border-dark-line pl-7"><strong className="text-2xl text-brand-accent">{full}</strong><p className="mt-1 text-xs">horário(s) lotado(s)</p></div></div>
       <div className="mt-8 flex items-center justify-between"><h2 className="text-xl font-extrabold">{new Date(`${date}T12:00:00`).toLocaleDateString("pt-BR", { day: "numeric", month: "short", year: "numeric" })}</h2><span className="text-xs text-muted">{visible.length} horários</span></div>

@@ -1,8 +1,5 @@
 import type { AvailabilityRuleDto, AvailableSlotDto, BookableSlotDTO, BookingDto, SpaceDTO } from "@/lib/api/models";
-
-const baseUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5144";
-
-export const advertiserUserId = process.env.NEXT_PUBLIC_BOOKING_USER_ID;
+import { authenticatedFetch } from "./api-auth";
 
 export class ApiError extends Error {
   constructor(public status: number, public details: unknown) {
@@ -11,7 +8,7 @@ export class ApiError extends Error {
 }
 
 export async function api<T>(path: string, options?: RequestInit): Promise<T> {
-  const response = await fetch(`${baseUrl}${path}`, { cache: "no-store", ...options });
+  const response = await authenticatedFetch(path, options);
   const text = await response.text();
   let body: unknown;
   try { body = text ? JSON.parse(text) : null; } catch { body = text; }
@@ -32,13 +29,12 @@ async function allPages<T>(path: string): Promise<T[]> {
 }
 
 export async function ownerSpaces(): Promise<SpaceDTO[]> {
-  if (!advertiserUserId) return [];
-  return allPages<SpaceDTO>(`/api/spaces/owner/${encodeURIComponent(advertiserUserId)}`);
+  return allPages<SpaceDTO>("/api/spaces/mine");
 }
 
 export async function ownedSpace(id: number): Promise<SpaceDTO> {
   const space = await api<SpaceDTO>(`/api/spaces/${id}`);
-  if (!advertiserUserId || space.ownerId !== advertiserUserId) throw new ApiError(404, null);
+  if (!(await ownerSpaces()).some(owned => owned.id === id)) throw new ApiError(404, null);
   return space;
 }
 

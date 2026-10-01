@@ -39,12 +39,12 @@ public class BookingService(
         return booking.ToDto();
     }
 
-    public async Task<BookingDto> CreateAsync(CreateBookingDto dto)
+    public async Task<BookingDto> CreateAsync(CreateBookingDto dto, string currentUserId)
     {
         _ = await bookableSlotRepository.GetByIdAsync(dto.BookableSlotId) ?? throw new ResourceNotFoundException("Horário não encontrado");
-        var user = await userManager.FindByIdAsync(dto.UserBookedId) ?? throw new ResourceNotFoundException("Usuário não encontrado");
+        _ = await userManager.FindByIdAsync(currentUserId) ?? throw new ResourceNotFoundException("Usuário não encontrado");
 
-        var createdBooking = await bookingRepository.AddAsync(dto.ToEntity());
+        var createdBooking = await bookingRepository.AddAsync(dto.ToEntity(currentUserId));
         return createdBooking.ToDto();
 
     }
@@ -65,9 +65,9 @@ public class BookingService(
         await bookingRepository.DeleteAsync(id);
     }
 
-    public async Task<BookingDto> CreateBookingAutoAsync(CreateBookingAutoDto dto)
+    public async Task<BookingDto> CreateBookingAutoAsync(CreateBookingAutoDto dto, string currentUserId)
     {
-        _ = await userManager.FindByIdAsync(dto.UserBookedId)
+        _ = await userManager.FindByIdAsync(currentUserId)
             ?? throw new ResourceNotFoundException("Usuário não encontrado.");
 
         BookableSlot slot;
@@ -110,7 +110,7 @@ public class BookingService(
 
         var booking = new Booking(
             slot.Id,
-            dto.UserBookedId,
+            currentUserId,
             BookingStatusEnum.Confirmado,
             dto.Quantity);
         var createdBooking = await bookingRepository.AddAsync(booking);

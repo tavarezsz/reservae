@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import Link from "next/link";
 import type { AvailableSlotDto, SpaceDTO } from "@/lib/api/models";
 import { getApiSpacesSpaceIdAvailability } from "@/lib/api/space/space";
 import { getApiSpacesSpaceIdAvailabilityLimit } from "@/lib/api/space/space";
-import { postApiBookingsCreateAuto } from "@/lib/api/booking/booking";
 import { Icon } from "./atoms/Icon";
 import { addDays, canBook, dateKey, dateLabel, money, parseDate, shortDate, slotDate, slotKey, timeLabel, weekStart } from "@/src/lib/availability";
 import { AvailabilityCalendar } from "./AvailabilityCalendar";
@@ -141,6 +141,7 @@ function BookingDialog({ slot, space, spaceId, onClose, onBooked }: { slot: Avai
   const [quantity, setQuantity] = useState(1);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
+  const [authRequired, setAuthRequired] = useState(false);
   const [bookingId, setBookingId] = useState<number | null>(null);
   const available = slot.availableQuantity ?? 0;
   const valid = quantity >= 1 && quantity <= available && Number.isInteger(quantity);
@@ -154,17 +155,23 @@ function BookingDialog({ slot, space, spaceId, onClose, onBooked }: { slot: Avai
   async function confirm(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!valid || sending.current || !canBook(slot)) return;
-    const userId = process.env.NEXT_PUBLIC_BOOKING_USER_ID;
-    if (!userId) { setError("Configure o usuário de desenvolvimento antes de reservar."); return; }
     sending.current = true;
     setPending(true);
     setError("");
     try {
-      const booking = await postApiBookingsCreateAuto({ userBookedId: userId, bookableSlotId: slot.bookableSlotId, availabilityRuleId: slot.availabilityRuleId, spaceId, startsAt: slot.startsAt, endsAt: slot.endsAt, quantity });
+      const response = await fetch("/api/bookings/create-auto", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bookableSlotId: slot.bookableSlotId, availabilityRuleId: slot.availabilityRuleId, spaceId, startsAt: slot.startsAt, endsAt: slot.endsAt, quantity }),
+      });
+      if (response.status === 401) { setAuthRequired(true); throw new Error("Entre na sua conta para confirmar a reserva."); }
+      if (!response.ok) {
+        const details = await response.json().catch(() => null) as { detail?: string } | null;
+        throw new Error(details?.detail || "Não foi possível confirmar a reserva. Confira a disponibilidade e tente novamente.");
+      }
+      const booking = await response.json() as { id?: number };
       setBookingId(booking.id ?? null);
     } catch (reason) {
-      const detail = (reason as { info?: { detail?: string } }).info?.detail;
-      setError(detail || "Não foi possível confirmar a reserva. Confira a disponibilidade e tente novamente.");
+      setError(reason instanceof Error ? reason.message : "Não foi possível confirmar a reserva. Tente novamente.");
     } finally {
       sending.current = false;
       setPending(false);
@@ -176,5 +183,5 @@ function BookingDialog({ slot, space, spaceId, onClose, onBooked }: { slot: Avai
     else onClose();
   }
 
-  return <dialog ref={dialog} onCancel={(event) => { event.preventDefault(); if (!pending) close(); }} className="m-auto w-[calc(100%-2rem)] max-w-md rounded-3xl border border-line bg-white p-0 text-ink shadow-2xl backdrop:bg-overlay"><div className="p-6 sm:p-8"><div className="flex items-start justify-between gap-3"><h2 className="text-2xl font-extrabold">{bookingId != null ? "Reserva confirmada" : "Confirme sua reserva"}</h2><button type="button" disabled={pending} onClick={close} aria-label="Fechar" className="text-2xl leading-none text-muted">×</button></div>{bookingId != null ? <div role="status"><p className="mt-6 text-sm">Sua reserva foi criada para <strong>{space.title}</strong>.</p><p className="mt-2 text-sm text-muted">{dateLabel(slotDate(slot))} · {timeLabel(slot.startsAt!)} – {timeLabel(slot.endsAt!)}</p><p className="mt-3 text-sm text-muted">{quantity} {quantity === 1 ? "vaga" : "vagas"} · Reserva #{bookingId}</p><button type="button" onClick={close} className="mt-7 w-full rounded-xl bg-brand p-3 font-bold text-white">Voltar ao espaço</button></div> : <form onSubmit={confirm}><p className="mt-6 font-bold">{space.title}</p><p className="mt-2 text-sm capitalize text-muted">{dateLabel(slotDate(slot))} · {timeLabel(slot.startsAt!)} – {timeLabel(slot.endsAt!)}</p><div className="mt-7 flex items-center justify-between gap-3 border-y border-line py-5"><label htmlFor="booking-quantity" className="font-bold">Vagas<span className="block text-xs font-normal text-muted">{available} disponíveis</span></label><div className="flex items-center gap-2"><button type="button" disabled={pending || quantity <= 1} onClick={() => setQuantity((value) => value - 1)} aria-label="Diminuir vagas" className="size-9 rounded-lg border border-line disabled:opacity-40">−</button><input id="booking-quantity" type="number" min="1" max={available} required value={quantity || ""} onChange={(event) => setQuantity(Number(event.target.value))} className="w-12 text-center font-bold outline-none" /><button type="button" disabled={pending || quantity >= available} onClick={() => setQuantity((value) => value + 1)} aria-label="Aumentar vagas" className="size-9 rounded-lg border border-line disabled:opacity-40">+</button></div></div><p className="mt-6 flex items-center justify-between text-sm">Total estimado<strong className="text-xl">{money((slot.pricePerSpot ?? space.pricePerSpot ?? 0) * (valid ? quantity : 0))}</strong></p><p className="mt-2 text-xs text-muted">Sem pagamento no app.</p>{error && <p role="alert" className="mt-4 rounded-lg bg-error-surface p-3 text-sm text-error">{error}</p>}<button type="submit" disabled={pending || !valid} className="mt-7 w-full rounded-xl bg-brand p-3 font-bold text-white disabled:bg-disabled disabled:text-disabled-text">{pending ? "Confirmando…" : "Confirmar reserva"}</button></form>}</div></dialog>;
+  return <dialog ref={dialog} onCancel={(event) => { event.preventDefault(); if (!pending) close(); }} className="m-auto w-[calc(100%-2rem)] max-w-md rounded-3xl border border-line bg-white p-0 text-ink shadow-2xl backdrop:bg-overlay"><div className="p-6 sm:p-8"><div className="flex items-start justify-between gap-3"><h2 className="text-2xl font-extrabold">{bookingId != null ? "Reserva confirmada" : "Confirme sua reserva"}</h2><button type="button" disabled={pending} onClick={close} aria-label="Fechar" className="text-2xl leading-none text-muted">×</button></div>{bookingId != null ? <div role="status"><p className="mt-6 text-sm">Sua reserva foi criada para <strong>{space.title}</strong>.</p><p className="mt-2 text-sm text-muted">{dateLabel(slotDate(slot))} · {timeLabel(slot.startsAt!)} – {timeLabel(slot.endsAt!)}</p><p className="mt-3 text-sm text-muted">{quantity} {quantity === 1 ? "vaga" : "vagas"} · Reserva #{bookingId}</p><button type="button" onClick={close} className="mt-7 w-full rounded-xl bg-brand p-3 font-bold text-white">Voltar ao espaço</button></div> : <form onSubmit={confirm}><p className="mt-6 font-bold">{space.title}</p><p className="mt-2 text-sm capitalize text-muted">{dateLabel(slotDate(slot))} · {timeLabel(slot.startsAt!)} – {timeLabel(slot.endsAt!)}</p><div className="mt-7 flex items-center justify-between gap-3 border-y border-line py-5"><label htmlFor="booking-quantity" className="font-bold">Vagas<span className="block text-xs font-normal text-muted">{available} disponíveis</span></label><div className="flex items-center gap-2"><button type="button" disabled={pending || quantity <= 1} onClick={() => setQuantity((value) => value - 1)} aria-label="Diminuir vagas" className="size-9 rounded-lg border border-line disabled:opacity-40">−</button><input id="booking-quantity" type="number" min="1" max={available} required value={quantity || ""} onChange={(event) => setQuantity(Number(event.target.value))} className="w-12 text-center font-bold outline-none" /><button type="button" disabled={pending || quantity >= available} onClick={() => setQuantity((value) => value + 1)} aria-label="Aumentar vagas" className="size-9 rounded-lg border border-line bg-white disabled:opacity-40">+</button></div></div><p className="mt-6 flex items-center justify-between text-sm">Total estimado<strong className="text-xl">{money((slot.pricePerSpot ?? space.pricePerSpot ?? 0) * (valid ? quantity : 0))}</strong></p><p className="mt-2 text-xs text-muted">Sem pagamento no app.</p>{error && <p role="alert" className="mt-4 rounded-lg bg-error-surface p-3 text-sm text-error">{error}{authRequired && <> <Link href={`/login?next=${encodeURIComponent(`/spaces/${spaceId}`)}`} className="font-bold underline">Entrar</Link></>}</p>}<button type="submit" disabled={pending || !valid} className="mt-7 w-full rounded-xl bg-brand p-3 font-bold text-white disabled:bg-disabled disabled:text-disabled-text">{pending ? "Confirmando…" : "Confirmar reserva"}</button></form>}</div></dialog>;
 }

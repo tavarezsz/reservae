@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import type { BookingDto } from "@/lib/api/models";
-import { getApiBookingsUserUserId } from "@/lib/api/booking/booking";
 import { categoryLabels } from "@/src/constants/CategoryLabels";
 import { timeLabel } from "@/src/lib/availability";
 import { Icon } from "./atoms/Icon";
@@ -14,31 +13,35 @@ const statusLabels: Record<number, string> = { 0: "Confirmada", 1: "Cancelada", 
 const dateFormatter = new Intl.DateTimeFormat("pt-BR", { weekday: "short", day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
 
 export function MyBookings() {
-  const userId = process.env.NEXT_PUBLIC_BOOKING_USER_ID;
   const [request, setRequest] = useState({ page: 1, revision: 0 });
   const [bookings, setBookings] = useState<BookingDto[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [authRequired, setAuthRequired] = useState(false);
   const [referenceTime, setReferenceTime] = useState(0);
 
   useEffect(() => {
-    if (!userId) return;
     const controller = new AbortController();
-    getApiBookingsUserUserId(userId, { page: request.page, pagesize: PAGE_SIZE }, { signal: controller.signal }).then((response) => {
+    fetch(`/api/bookings/mine?page=${request.page}&pagesize=${PAGE_SIZE}`, { signal: controller.signal }).then(async (response) => {
+      if (response.status === 401) { setAuthRequired(true); setBookings([]); setTotalCount(0); throw new Error("Unauthenticated"); }
+      if (!response.ok) throw new Error("Booking request failed");
+      return response.json() as Promise<{ items?: BookingDto[]; totalCount?: number }>;
+    }).then((response) => {
       if (controller.signal.aborted) return;
       const next = response.items ?? [];
       setBookings((previous) => request.page === 1 ? next : [...previous, ...next.filter((item) => !previous.some((existing) => existing.id === item.id))]);
       setTotalCount(response.totalCount ?? 0);
       setReferenceTime(Date.now());
       setError(false);
+      setAuthRequired(false);
     }).catch(() => {
       if (!controller.signal.aborted) setError(true);
     }).finally(() => {
       if (!controller.signal.aborted) setLoading(false);
     });
     return () => controller.abort();
-  }, [userId, request]);
+  }, [request]);
 
   function reload() {
     setLoading(true);
@@ -62,13 +65,12 @@ export function MyBookings() {
         <p className="mt-3 text-sm text-muted sm:text-base">Seus próximos planos já têm lugar.</p>
       </header>
 
-      {!userId && <div role="alert" className="mt-9 rounded-2xl bg-error-surface p-5 text-sm text-error">Configure o usuário de desenvolvimento para consultar as reservas.</div>}
-      {userId && loading && bookings.length === 0 && <div role="status" className="mt-10 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">{Array.from({ length: 3 }, (_, index) => <div key={index} className="overflow-hidden rounded-[22px] border border-line bg-white motion-safe:animate-pulse"><div className="aspect-[1.65] bg-surface-hint" /><div className="space-y-4 p-6"><div className="h-3 w-20 rounded bg-surface-hint" /><div className="h-6 w-2/3 rounded bg-surface-hint" /><div className="h-4 w-1/2 rounded bg-surface-hint" /></div></div>)}</div>}
-      {userId && !loading && !error && bookings.length === 0 && <div className="mt-10 rounded-3xl bg-surface-soft px-6 py-12 text-center"><Icon name="calendar" className="mx-auto size-9 text-brand" /><h2 className="mt-4 text-xl font-extrabold">Você ainda não tem reservas</h2><p className="mt-2 text-sm text-muted">Encontre um espaço e escolha seu primeiro horário.</p><Link href="/#espacos" className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-xl bg-brand px-5 text-sm font-bold text-white">Explorar espaços<Icon name="arrow" /></Link></div>}
+      {loading && bookings.length === 0 && <div role="status" className="mt-10 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">{Array.from({ length: 3 }, (_, index) => <div key={index} className="overflow-hidden rounded-[22px] border border-line bg-white motion-safe:animate-pulse"><div className="aspect-[1.65] bg-surface-hint" /><div className="space-y-4 p-6"><div className="h-3 w-20 rounded bg-surface-hint" /><div className="h-6 w-2/3 rounded bg-surface-hint" /><div className="h-4 w-1/2 rounded bg-surface-hint" /></div></div>)}</div>}
+      {!loading && !error && bookings.length === 0 && <div className="mt-10 rounded-3xl bg-surface-soft px-6 py-12 text-center"><Icon name="calendar" className="mx-auto size-9 text-brand" /><h2 className="mt-4 text-xl font-extrabold">Você ainda não tem reservas</h2><p className="mt-2 text-sm text-muted">Encontre um espaço e escolha seu primeiro horário.</p><Link href="/#espacos" className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-xl bg-brand px-5 text-sm font-bold text-white">Explorar espaços<Icon name="arrow" /></Link></div>}
 
       {upcoming.length > 0 && <section className="mt-11" aria-labelledby="upcoming-title"><div className="mb-5 flex items-center justify-between gap-3"><h2 id="upcoming-title" className="text-[22px] font-extrabold">Próximas reservas</h2><span className="rounded-full bg-surface-soft px-3 py-2 text-xs font-bold text-brand">{upcoming.length} {upcoming.length === 1 ? "reserva" : "reservas"}</span></div><div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">{upcoming.map((booking) => <BookingCard key={booking.id} booking={booking} />)}</div></section>}
       {past.length > 0 && <section className="mt-11" aria-labelledby="past-title"><div className="mb-5 flex items-center justify-between gap-3"><h2 id="past-title" className="text-[22px] font-extrabold">Reservas anteriores</h2><span className="rounded-full bg-surface-soft px-3 py-2 text-xs font-bold text-brand">{past.length} {past.length === 1 ? "reserva" : "reservas"}</span></div><div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">{past.map((booking) => <BookingCard key={booking.id} booking={booking} />)}</div></section>}
-      {error && <div role="alert" className="mt-9 rounded-2xl bg-error-surface p-5 text-center text-sm text-error">Não foi possível carregar as reservas.<button type="button" onClick={reload} className="ml-2 font-bold underline">Tentar novamente</button></div>}
+      {error && <div role="alert" className="mt-9 rounded-2xl bg-error-surface p-5 text-center text-sm text-error">{authRequired ? <>Entre na sua conta para consultar as reservas. <Link href="/login?next=/bookings" className="font-bold underline">Entrar</Link></> : <>Não foi possível carregar as reservas.<button type="button" onClick={reload} className="ml-2 font-bold underline">Tentar novamente</button></>}</div>}
       {bookings.length < totalCount && !error && <div className="mt-8 text-center"><button type="button" onClick={loadMore} disabled={loading} className="min-h-11 rounded-xl border border-line-strong bg-white px-6 text-sm font-bold text-brand disabled:opacity-50">{loading ? "Carregando…" : "Carregar mais reservas"}</button></div>}
       {bookings.length > 0 && <p className="mt-9 text-center text-xs text-muted">{bookings.length} de {totalCount} reservas carregadas · Um lugar para cada plano.</p>}
     </div>

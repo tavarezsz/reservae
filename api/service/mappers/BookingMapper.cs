@@ -28,10 +28,10 @@ public static class BookingMapper
         };
     }
 
-    public static Booking ToEntity(this CreateBookingDto dto)
+    public static Booking ToEntity(this CreateBookingDto dto, string userBookedId)
         => new(
             dto.BookableSlotId,
-            dto.UserBookedId,
+            userBookedId,
             dto.Status,
             dto.Quantity);
 

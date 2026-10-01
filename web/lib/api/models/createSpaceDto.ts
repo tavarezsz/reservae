@@ -8,8 +8,6 @@
 import type { CategoryEnum } from './categoryEnum';
 
 export interface CreateSpaceDto {
-  /** @minLength 1 */
-  ownerId: string;
   /**
      * @minLength 0
      * @maxLength 500

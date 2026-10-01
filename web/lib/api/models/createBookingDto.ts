@@ -9,8 +9,6 @@ import type { BookingStatusEnum } from './bookingStatusEnum';
 
 export interface CreateBookingDto {
   bookableSlotId?: number;
-  /** @nullable */
-  userBookedId: string | null;
   status?: BookingStatusEnum;
   quantity?: number;
 }

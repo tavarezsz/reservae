@@ -7,8 +7,6 @@
  */
 
 export interface CreateBookingAutoDto {
-  /** @nullable */
-  userBookedId: string | null;
   /**
      * @minimum 1
      * @maximum 2147483647

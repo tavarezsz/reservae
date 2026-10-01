@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { ApiError, advertiserUserId, api, ownedSpace, spaceRules } from "@/src/lib/advertiser";
+import { ApiError, api, ownedSpace, spaceRules } from "@/src/lib/advertiser";
 import type {
   AvailabilityRuleDto, BookableSlotDTO, CategoryEnum, CreateAvailabilityRuleDTO,
   CreateBookableSlotDTO, CreateSpaceDto, DayOfTheWeekEnum, SpaceDTO,
@@ -31,7 +31,8 @@ function apiFailure(previous: FormState, values: Record<string, string>, error: 
   if (error instanceof ApiError) {
     const details = error.details as { errors?: Record<string, string[]>; detail?: string } | null;
     const errors = Object.fromEntries(Object.entries(details?.errors ?? {}).map(([key, messages]) => [key.replace(/^dto\./i, "").replace(/^./, letter => letter.toLowerCase()), messages.join(" ")]));
-    const message = error.status === 400 ? details?.detail ?? "Revise os campos destacados e tente novamente."
+    const message = error.status === 401 ? "Sua sessão expirou. Entre novamente e tente salvar."
+      : error.status === 400 ? details?.detail ?? "Revise os campos destacados e tente novamente."
       : error.status === 404 ? "Registro não encontrado ou indisponível para este anunciante."
       : "Não foi possível salvar agora. Tente novamente.";
     return failure(previous, values, message, errors);
@@ -54,11 +55,10 @@ export async function createSpace(previous: FormState, formData: FormData): Prom
   const amount = price(values, "pricePerSpot");
   if (amount !== null && (!Number.isFinite(amount) || amount < 0)) errors.pricePerSpot = "Informe um preço válido.";
   if (Object.keys(errors).length) return failure(previous, values, "Revise os campos destacados.", errors);
-  if (!advertiserUserId) return failure(previous, values, "Configure o usuário de desenvolvimento antes de cadastrar espaços.");
   let id: number | undefined;
   try {
     const body = {
-      ownerId: advertiserUserId, title: field(values, "title"), address: field(values, "address"),
+      title: field(values, "title"), address: field(values, "address"),
       description: field(values, "description"), category: Number(values.category ?? 5) as CategoryEnum,
       pricePerSpot: amount,
     } satisfies CreateSpaceDto;

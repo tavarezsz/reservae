@@ -74,10 +74,10 @@ public class SpaceService(
         return space.ToDto();
     }
 
-    public async Task<SpaceDTO> CreateAsync(CreateSpaceDto dto)
+    public async Task<SpaceDTO> CreateAsync(CreateSpaceDto dto, string ownerId)
     {
-        var owner = await userManager.FindByIdAsync(dto.OwnerId)
-            ?? throw new ResourceNotFoundException($"Usuário com id {dto.OwnerId} não encontrado.");
+        var owner = await userManager.FindByIdAsync(ownerId)
+            ?? throw new ResourceNotFoundException($"Usuário com id {ownerId} não encontrado.");
 
         var space = new Space(
             owner.Id,

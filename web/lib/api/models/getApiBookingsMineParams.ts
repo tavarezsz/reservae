@@ -6,7 +6,7 @@
  * OpenAPI spec version: v1
  */
 
-export type GetApiBookingsUserUserIdParams = {
+export type GetApiBookingsMineParams = {
 page?: number;
 pagesize?: number;
 };

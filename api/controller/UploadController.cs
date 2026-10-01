@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Reservae.Models.DTOs;
 using Reservae.Service;
 
 namespace Reservae.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/uploads")]
 public class UploadController(

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Reservae.Models.DTOs;
 using Reservae.Service;
@@ -33,6 +34,7 @@ public class BookableSlotController(BookableSlotService bookableSlotService)
         [FromQuery, Range(1, 100)] int pageSize = 10)
         => Ok(await bookableSlotService.GetStandaloneForSpaceAsync(spaceId, page, pageSize));
 
+    [Authorize]
     [HttpPost]
     [ProducesResponseType<BookableSlotDTO>(StatusCodes.Status201Created)]
     public async Task<ActionResult<BookableSlotDTO>> Create(
@@ -42,6 +44,7 @@ public class BookableSlotController(BookableSlotService bookableSlotService)
         return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
     }
 
+    [Authorize]
     [HttpPut("{id:int}")]
     public async Task<ActionResult<BookableSlotDTO>> Update(
         int id,
@@ -51,6 +54,7 @@ public class BookableSlotController(BookableSlotService bookableSlotService)
         return Ok(result);
     }
 
+    [Authorize]
     [HttpDelete("{id:int}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> Delete(int id)

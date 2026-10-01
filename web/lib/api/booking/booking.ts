@@ -10,14 +10,13 @@ import type {
   BookingDtoPagedResponseDto,
   CreateBookingAutoDto,
   CreateBookingDto,
+  GetApiBookingsMineParams,
   GetApiBookingsSpaceSpaceIdParams,
-  GetApiBookingsUserUserIdParams,
   UpdateBookingDto
 } from '../models';
 
 
-export const getGetApiBookingsUserUserIdUrl = (userId: string,
-    params?: GetApiBookingsUserUserIdParams,) => {
+export const getGetApiBookingsMineUrl = (params?: GetApiBookingsMineParams,) => {
   const normalizedParams = new URLSearchParams();
 
   Object.entries(params || {}).forEach(([key, value]) => {
@@ -29,13 +28,12 @@ export const getGetApiBookingsUserUserIdUrl = (userId: string,
 
   const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0 ? `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5144"}/api/bookings/user/${userId}?${stringifiedParams}` : `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5144"}/api/bookings/user/${userId}`
+  return stringifiedParams.length > 0 ? `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5144"}/api/bookings/mine?${stringifiedParams}` : `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5144"}/api/bookings/mine`
 }
 
-export const getApiBookingsUserUserId = async (userId: string,
-    params?: GetApiBookingsUserUserIdParams, options?: RequestInit): Promise<BookingDtoPagedResponseDto> => {
+export const getApiBookingsMine = async (params?: GetApiBookingsMineParams, options?: RequestInit): Promise<BookingDtoPagedResponseDto> => {
 
-  const res = await fetch(getGetApiBookingsUserUserIdUrl(userId,params),
+  const res = await fetch(getGetApiBookingsMineUrl(params),
   {
     ...options,
     method: 'GET'

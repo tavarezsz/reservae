@@ -4,8 +4,6 @@ namespace Reservae.Models.DTOs;
 
 public class CreateBookingAutoDto
 {
-    public required string UserBookedId { get; set; }
-
     [Range(1, int.MaxValue)]
     public int? BookableSlotId { get; set; }
 

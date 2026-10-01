@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Reservae.Models.DTOs;
 using Reservae.Service;
@@ -28,6 +29,7 @@ public class AvailabilityRuleController(AvailabilityRuleService availabilityServ
         return Ok(result);
     }
 
+
     [HttpGet("space/{spaceId:int}")]
     public async Task<ActionResult<PagedResponseDto<AvailabilityRuleDto>>> GetForSpace(
         int spaceId,
@@ -35,6 +37,7 @@ public class AvailabilityRuleController(AvailabilityRuleService availabilityServ
         [FromQuery, Range(1, 100)] int pageSize = 10)
         => Ok(await availabilityService.GetForSpaceAsync(spaceId, page, pageSize));
 
+    [Authorize]
     [HttpPost]
     [ProducesResponseType<AvailabilityRuleDto>(StatusCodes.Status201Created)]
     public async Task<ActionResult<AvailabilityRuleDto>> Create(
@@ -48,6 +51,7 @@ public class AvailabilityRuleController(AvailabilityRuleService availabilityServ
         return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
     }
 
+    [Authorize]
     [HttpPut("{id:int}")]
     public async Task<ActionResult<AvailabilityRuleDto>> Update(
         int id,

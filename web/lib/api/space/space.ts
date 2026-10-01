@@ -8,7 +8,7 @@
 import type {
   AvailableSlotDto,
   CreateSpaceDto,
-  GetApiSpacesOwnerOwnerIdParams,
+  GetApiSpacesMineParams,
   GetApiSpacesParams,
   GetApiSpacesSearchParams,
   GetApiSpacesSpaceIdAvailabilityParams,
@@ -232,8 +232,7 @@ const res = await fetch(getPutApiSpacesIdUrl(id),
 }
 
 
-export const getGetApiSpacesOwnerOwnerIdUrl = (ownerId: string,
-    params?: GetApiSpacesOwnerOwnerIdParams,) => {
+export const getGetApiSpacesMineUrl = (params?: GetApiSpacesMineParams,) => {
   const normalizedParams = new URLSearchParams();
 
   Object.entries(params || {}).forEach(([key, value]) => {
@@ -245,13 +244,12 @@ export const getGetApiSpacesOwnerOwnerIdUrl = (ownerId: string,
 
   const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0 ? `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5144"}/api/spaces/owner/${ownerId}?${stringifiedParams}` : `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5144"}/api/spaces/owner/${ownerId}`
+  return stringifiedParams.length > 0 ? `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5144"}/api/spaces/mine?${stringifiedParams}` : `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5144"}/api/spaces/mine`
 }
 
-export const getApiSpacesOwnerOwnerId = async (ownerId: string,
-    params?: GetApiSpacesOwnerOwnerIdParams, options?: RequestInit): Promise<SpaceDTOPagedResponseDto> => {
+export const getApiSpacesMine = async (params?: GetApiSpacesMineParams, options?: RequestInit): Promise<SpaceDTOPagedResponseDto> => {
 
-  const res = await fetch(getGetApiSpacesOwnerOwnerIdUrl(ownerId,params),
+  const res = await fetch(getGetApiSpacesMineUrl(params),
   {
     ...options,
     method: 'GET'

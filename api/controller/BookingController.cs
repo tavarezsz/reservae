@@ -1,21 +1,26 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Identity;
+using Reservae.Models;
 using Reservae.Models.DTOs;
 using Reservae.Service;
 
 namespace Reservae.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/bookings")]
 
-public class BookingController(BookingService bookingService) : ControllerBase
+public class BookingController(BookingService bookingService, UserManager<User> userManager) : ControllerBase
 {
-    [HttpGet("user/{userId}")]
+    [HttpGet("mine")]
     public async Task<ActionResult<PagedResponseDto<BookingDto>>> GetByUserIdPaged(
-        string userId,
         [FromQuery] int page = 1,
         [FromQuery] int pagesize = 10)
     {
-        var result = await bookingService.GetPagedByUserIdAsync(page, pagesize, userId);
+        var currentUserId = userManager.GetUserId(User);
+        if (currentUserId is null) return Unauthorized();
+        var result = await bookingService.GetPagedByUserIdAsync(page, pagesize, currentUserId);
         return Ok(result);
     }
 
@@ -41,7 +46,9 @@ public class BookingController(BookingService bookingService) : ControllerBase
     public async Task<ActionResult<BookingDto>> Create(
         [FromBody] CreateBookingDto dto)
     {
-        var result  = await bookingService.CreateAsync(dto);
+        var currentUserId = userManager.GetUserId(User);
+        if (currentUserId is null) return Unauthorized();
+        var result = await bookingService.CreateAsync(dto, currentUserId);
         return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
     }
 
@@ -69,7 +76,9 @@ public class BookingController(BookingService bookingService) : ControllerBase
         [FromBody] CreateBookingAutoDto dto
     )
     {
-        var result = await bookingService.CreateBookingAutoAsync(dto);
+        var currentUserId = userManager.GetUserId(User);
+        if (currentUserId is null) return Unauthorized();
+        var result = await bookingService.CreateBookingAutoAsync(dto, currentUserId);
         return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
     }
 }

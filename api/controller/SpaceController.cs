@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Identity;
 using Reservae.Models;
 using Reservae.Models.DTOs;
 using Reservae.Service;
@@ -8,7 +10,7 @@ namespace Reservae.Controllers;
 
 [ApiController]
 [Route("api/spaces")]
-public class SpaceController(SpaceService spaceService) : ControllerBase
+public class SpaceController(SpaceService spaceService, UserManager<User> userManager) : ControllerBase
 {
     [HttpGet("search")]
     public async Task<ActionResult<PagedResponseDto<SpaceDTO>>> Search(
@@ -43,13 +45,18 @@ public class SpaceController(SpaceService spaceService) : ControllerBase
         return Ok(result);
     }
 
-    [HttpGet("owner/{ownerId}")]
+    [Authorize]
+    [HttpGet("mine")]
     public async Task<ActionResult<PagedResponseDto<SpaceDTO>>> GetForOwner(
-        string ownerId,
         [FromQuery, Range(1, int.MaxValue)] int page = 1,
         [FromQuery, Range(1, 100)] int pageSize = 10)
-        => Ok(await spaceService.GetForOwnerAsync(ownerId, page, pageSize));
+    {
+        var currentUserId = userManager.GetUserId(User);
+        if (currentUserId is null) return Unauthorized();
+        return Ok(await spaceService.GetForOwnerAsync(currentUserId, page, pageSize));
+    }
 
+    [Authorize]
     [HttpPost]
     [ProducesResponseType<SpaceDTO>(StatusCodes.Status201Created)]
     public async Task<ActionResult<SpaceDTO>> Create(
@@ -59,10 +66,14 @@ public class SpaceController(SpaceService spaceService) : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var result = await spaceService.CreateAsync(dto);
+        var currentUserId = userManager.GetUserId(User);
+        if (currentUserId is null) return Unauthorized();
+
+        var result = await spaceService.CreateAsync(dto, currentUserId);
         return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
     }
 
+    [Authorize]
     [HttpPut("{id:int}")]
     public async Task<ActionResult<SpaceDTO>> Update(
         int id,

@@ -5,9 +5,6 @@ namespace Reservae.Models.DTOs;
 
 public class CreateSpaceDto
 {
-    [Required]
-    public required string OwnerId { get; init; }
-
     [Required, StringLength(500)]
     public required string Address { get; init; }
 

@@ -6,7 +6,7 @@
  * OpenAPI spec version: v1
  */
 
-export type GetApiSpacesOwnerOwnerIdParams = {
+export type GetApiSpacesMineParams = {
 /**
  * @minimum 1
  * @maximum 2147483647
