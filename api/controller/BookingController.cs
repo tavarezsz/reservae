@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Reservae.Models;
 using Reservae.Models.DTOs;
 using Reservae.Service;
+using Reservae.Authorization;
 
 namespace Reservae.Controllers;
 
@@ -25,6 +26,7 @@ public class BookingController(BookingService bookingService, UserManager<User> 
     }
 
     [HttpGet("space/{spaceId:int}")]
+    [ResourceAuthorize(ResourceKind.Space, "spaceId")]
     public async Task<ActionResult<PagedResponseDto<BookingDto>>> GetBySpaceIdPaged(
         int spaceId,
         [FromQuery] int page = 1,
@@ -35,6 +37,7 @@ public class BookingController(BookingService bookingService, UserManager<User> 
     }
 
     [HttpGet("{id:int}")]
+    [ResourceAuthorize(ResourceKind.Booking, "id", ResourcePolicies.BookingReader)]
     public async Task<ActionResult<BookingDto>> GetById(int id)
     {
         var result = await bookingService.GetByIdAsync(id);
@@ -53,6 +56,7 @@ public class BookingController(BookingService bookingService, UserManager<User> 
     }
 
     [HttpPut("{id:int}")]
+    [ResourceAuthorize(ResourceKind.Booking, "id", ResourcePolicies.BookingUser)]
     public async Task<ActionResult<BookingDto>> Update(
         int id,
         [FromBody] UpdateBookingDto dto
@@ -63,6 +67,7 @@ public class BookingController(BookingService bookingService, UserManager<User> 
     }
 
     [HttpDelete("{id:int}")]
+    [ResourceAuthorize(ResourceKind.Booking, "id", ResourcePolicies.BookingUser)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> Delete(int id)
     {

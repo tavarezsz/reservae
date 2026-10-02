@@ -7,6 +7,8 @@ using Reservae.Models.Interfaces;
 using Reservae.Repository;
 using Reservae.Service;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Authorization;
+using Reservae.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -54,7 +56,9 @@ builder.Services.AddCors(options =>
             .AllowAnyMethod();
     });
 });
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(ResourcePolicies.Configure);
+builder.Services.AddScoped<IAuthorizationHandler, ResourceOwnershipHandler>();
+builder.Services.AddScoped<IResourceOwnershipResolver, ResourceOwnershipResolver>();
 builder.Services.AddIdentityApiEndpoints<User>(options =>
     {
         options.User.RequireUniqueEmail = true;
@@ -125,3 +129,5 @@ app.MapGet("/auth/me", async (System.Security.Claims.ClaimsPrincipal principal, 
 }).RequireAuthorization();
 
 app.Run();
+
+public partial class Program { }

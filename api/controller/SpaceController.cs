@@ -5,6 +5,7 @@ using Reservae.Models;
 using Reservae.Models.DTOs;
 using Reservae.Service;
 using System.ComponentModel.DataAnnotations;
+using Reservae.Authorization;
 
 namespace Reservae.Controllers;
 
@@ -73,7 +74,7 @@ public class SpaceController(SpaceService spaceService, UserManager<User> userMa
         return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
     }
 
-    [Authorize]
+    [ResourceAuthorize(ResourceKind.Space, "id")]
     [HttpPut("{id:int}")]
     public async Task<ActionResult<SpaceDTO>> Update(
         int id,

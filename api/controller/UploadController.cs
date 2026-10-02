@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Reservae.Models.DTOs;
 using Reservae.Service;
+using Reservae.Authorization;
 
 namespace Reservae.Controllers;
 
@@ -13,6 +14,7 @@ public class UploadController(
     SpaceService spaceService) : ControllerBase
 {
     [HttpPost("images")]
+    [ResourceAuthorize(ResourceKind.Space, "request.SpaceId")]
     [Consumes("multipart/form-data")]
     [RequestSizeLimit(6 * 1024 * 1024)]
     [ProducesResponseType<SpaceDTO>(StatusCodes.Status200OK)]
