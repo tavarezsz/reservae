@@ -47,8 +47,16 @@ public class AvailabilityRuleController(AvailabilityRuleService availabilityServ
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var result = await availabilityService.CreateAsync(dto);
-        return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+        try
+        {
+            var result = await availabilityService.CreateAsync(dto);
+            return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+        }
+        catch (ArgumentException exception)
+        {
+            return Problem(statusCode: StatusCodes.Status400BadRequest,
+                title: "Regra de disponibilidade inválida", detail: exception.Message);
+        }
     }
 
     [ResourceAuthorize(ResourceKind.AvailabilityRule, "id")]
@@ -60,8 +68,15 @@ public class AvailabilityRuleController(AvailabilityRuleService availabilityServ
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var result = await availabilityService.UpdateAsync(id, dto);
-
-        return Ok(result);
+        try
+        {
+            var result = await availabilityService.UpdateAsync(id, dto);
+            return Ok(result);
+        }
+        catch (ArgumentException exception)
+        {
+            return Problem(statusCode: StatusCodes.Status400BadRequest,
+                title: "Regra de disponibilidade inválida", detail: exception.Message);
+        }
     }
 }

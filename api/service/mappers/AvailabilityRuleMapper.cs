@@ -55,14 +55,12 @@ public static class AvailabilityRuleMapper
             dto.StartTime ?? entity.StartTime,
             dto.EndTime ?? entity.EndTime,
             dto.ValidFrom ?? entity.ValidFrom,
-            dto.ValidUntil ?? entity.ValidUntil);
+            dto.ValidUntil ?? entity.ValidUntil,
+            dto.SlotDurationMinutes ?? entity.SlotDurationMinutes);
 
         entity.ChangePriceAndCapacity(
             dto.ClearCustomPricePerSpot ? null : dto.CustomPricePerSpot ?? entity.CustomPricePerSpot,
             dto.Capacity ?? entity.Capacity);
-
-        if (dto.SlotDurationMinutes is int slotDurationMinutes)
-            entity.ChangeSlotDuration(slotDurationMinutes);
 
         if (dto.IsActive is bool isActive)
             entity.SetActive(isActive);

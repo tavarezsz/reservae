@@ -181,12 +181,15 @@ public class SpaceService(
                 if (ToRuleDay(date.DayOfWeek) != rule.DayOfTheWeek)
                     continue;
 
-                var slotStartTime = rule.StartTime;
+                var startsAt = ToUtcDateTime(date, rule.StartTime);
+                var ruleEndsAt = ToUtcDateTime(date, rule.EndTime);
                 var duration = TimeSpan.FromMinutes(rule.SlotDurationMinutes);
+                if (duration <= TimeSpan.Zero)
+                    continue;
 
-                while (slotStartTime.Add(duration) <= rule.EndTime)
+                while (startsAt.Add(duration) <= ruleEndsAt)
                 {
-                    var startsAt = ToUtcDateTime(date, slotStartTime);
+                    cancellationToken.ThrowIfCancellationRequested();
                     var endsAt = startsAt.Add(duration);
                     var occurrenceKey = (rule.Id, startsAt);
 
@@ -212,7 +215,7 @@ public class SpaceService(
                         });
                     }
 
-                    slotStartTime = slotStartTime.Add(duration);
+                    startsAt = endsAt;
                 }
             }
         }

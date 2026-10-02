@@ -20,7 +20,7 @@ namespace Reservae.Models
         {
             ValidatePeriod(startTime, endTime, validFrom, validUntil);
             ValidatePriceAndCapacity(customPricePerSpot, capacity);
-            ValidateSlotDuration(slotDurationMinutes);
+            ValidateSlotDuration(slotDurationMinutes, startTime, endTime);
 
             if (spaceId <= 0)
                 throw new ArgumentOutOfRangeException(nameof(spaceId));
@@ -63,7 +63,7 @@ namespace Reservae.Models
 
         public void ChangeSlotDuration(int slotDurationMinutes)
         {
-            ValidateSlotDuration(slotDurationMinutes);
+            ValidateSlotDuration(slotDurationMinutes, StartTime, EndTime);
             SlotDurationMinutes = slotDurationMinutes;
         }
 
@@ -72,15 +72,19 @@ namespace Reservae.Models
             TimeOnly startTime,
             TimeOnly endTime,
             DateTime validFrom,
-            DateTime validUntil)
+            DateTime validUntil,
+            int? slotDurationMinutes = null)
         {
             ValidatePeriod(startTime, endTime, validFrom, validUntil);
+            var duration = slotDurationMinutes ?? SlotDurationMinutes;
+            ValidateSlotDuration(duration, startTime, endTime);
 
             DayOfTheWeek = dayOfTheWeek;
             StartTime = startTime;
             EndTime = endTime;
             ValidFrom = validFrom;
             ValidUntil = validUntil;
+            SlotDurationMinutes = duration;
         }
 
         private static void ValidatePeriod(
@@ -103,12 +107,16 @@ namespace Reservae.Models
                 throw new ArgumentOutOfRangeException(nameof(capacity), "A capacidade deve ser positiva.");
         }
 
-        private static void ValidateSlotDuration(int slotDurationMinutes)
+        private static void ValidateSlotDuration(int slotDurationMinutes, TimeOnly startTime, TimeOnly endTime)
         {
             if (slotDurationMinutes < 30)
                 throw new ArgumentOutOfRangeException(
                     nameof(slotDurationMinutes),
                     "A duração mínima de um horário é de 30 minutos.");
+            if (TimeSpan.FromMinutes(slotDurationMinutes) > endTime - startTime)
+                throw new ArgumentOutOfRangeException(
+                    nameof(slotDurationMinutes),
+                    "A duração de um horário não pode ser maior que o intervalo entre o início e o fim da regra.");
         }
 
         public void ChangeCustomPrice(decimal? price)
