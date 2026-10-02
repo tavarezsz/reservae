@@ -2,6 +2,27 @@
 
 API ASP.NET Core (.NET 10) com PostgreSQL, EF Core Code First e ASP.NET Core Identity.
 
+## Sobre o projeto
+
+O **Reservaê** é uma aplicação para encontrar e reservar espaços por horário. Anunciantes podem cadastrar seus espaços, definir disponibilidades recorrentes ou horários avulsos e consultar as reservas recebidas. Clientes podem pesquisar espaços, consultar horários disponíveis e gerenciar suas reservas.
+
+O projeto foi desenvolvido como estudo prático de **desenvolvimento backend com C# e ASP.NET Core**. O foco está na construção da API, na modelagem dos dados e na implementação das regras de negócio de um sistema de reservas: quem pode acessar cada recurso, como representar uma agenda recorrente e como controlar a capacidade de um horário diante de requisições simultâneas.
+
+### Principais pontos do backend
+
+- **Organização em camadas:** controllers recebem as requisições HTTP, services coordenam os casos de uso, entidades validam suas operações e repositories concentram o acesso ao banco. DTOs e mappers definem os contratos da API, e a injeção de dependência conecta os componentes por suas interfaces.
+- **Persistência com EF Core Code First:** entidades e relacionamentos são mapeados para PostgreSQL, com migrations para evoluir o schema, índices e restrições no banco. Consultas incluem paginação e carregamento das relações necessárias para cada resposta.
+- **Autenticação e autorização por recurso:** o ASP.NET Core Identity gerencia contas e autenticação. Políticas, handlers e filtros verificam a relação do usuário com o recurso antes de executar operações protegidas. O anunciante gerencia seus espaços e consulta as reservas recebidas; o cliente altera e exclui suas próprias reservas.
+- **Disponibilidade calculada sob demanda:** regras recorrentes definem dia da semana, período de vigência, intervalo diário, duração e capacidade. A API calcula horários virtuais para o período consultado e persiste a ocorrência quando ela recebe uma reserva, evitando criar antecipadamente todos os horários de regras que duram anos. Horários avulsos também são suportados.
+- **Preço em cascata:** o espaço define o preço padrão, uma regra pode sobrescrevê-lo e um horário pode ter seu próprio preço. O valor efetivo segue a prioridade horário → regra → espaço.
+- **Controle de capacidade e concorrência:** a criação e a atualização de reservas usam transações e bloqueio de linha (`SELECT … FOR UPDATE`) no PostgreSQL. A quantidade confirmada é consultada dentro da transação para impedir que reservas simultâneas ultrapassem a capacidade do horário.
+- **Busca por similaridade:** a pesquisa considera título, endereço e descrição usando a extensão `pg_trgm` do PostgreSQL, com ordenação por relevância e índices GIN nos campos pesquisados.
+- **Testes e documentação:** testes com xUnit cobrem permissões de acesso, validações de disponibilidade e a seed de demonstração. Swagger/OpenAPI documenta os endpoints e fornece os contratos usados pelo front. A importação da seed também pode ser testada em bancos PostgreSQL temporários.
+
+A API também oferece upload e substituição da imagem de capa dos espaços. Para facilitar a avaliação do projeto, o ambiente Docker inclui uma seed com usuários, espaços, imagens, regras, horários e reservas, preservando as relações entre os dados.
+
+O front em **Next.js, React e TypeScript** permite explorar esses fluxos pela interface. Os clientes e tipos da API são gerados pelo **Orval** a partir do OpenAPI, e as operações da área do anunciante usam server actions com `useActionState` para preservar os dados dos formulários quando uma operação falha.
+
 ## Executar com Docker
 
 Instale o Docker Desktop com containers Linux e o Docker Compose v2. Não é necessário instalar .NET, Node.js ou PostgreSQL na máquina. Na raiz do repositório:
@@ -18,9 +39,9 @@ O primeiro build baixa as imagens e dependências, compila o front e a API, e po
 | Swagger da API | http://localhost:5144/swagger |
 | Health check da API | http://localhost:5144/health |
 
-Faça login com **`teste@example.com` / `ReservaeDemo123!`**. Os demais usuários importados também recebem essa senha de demonstração. Há espaços, imagens, regras de disponibilidade e reservas para explorar.
+Faça login com **`teste@example.com` / `ReservaeDemo123!`** para acesso de edição aos espaços já existentes. Os demais usuários importados também recebem essa senha de demonstração. Há espaços, imagens, regras de disponibilidade e reservas para explorar.
 
-O ambiente usa três serviços: `web` (Next.js), `api` (ASP.NET Core) e `db` (PostgreSQL 17). O banco fica acessível somente na rede interna do Compose; as portas do front e da API são publicadas apenas em `127.0.0.1`. Seu PostgreSQL local e seu banco de desenvolvimento não são usados nem alterados.
+O ambiente usa três serviços: `web` (Next.js), `api` (ASP.NET Core) e `db` (PostgreSQL 17). O banco fica acessível somente na rede interna do Compose; as portas do front e da API são publicadas apenas em `127.0.0.1`.
 
 ### Configuração opcional
 
@@ -134,43 +155,3 @@ dotnet run --no-launch-profile -- --export-demo-data
 A exportação só lê o banco; substitui o JSON e copia as imagens referenciadas para a pasta da seed. Revise os dados antes de compartilhá-los: os e-mails e nomes dos usuários estão no snapshot. Regras inválidas são rejeitadas na exportação, com indicação do ID a corrigir. Os arquivos da seed são incluídos no build e no publish da API.
 
 Para verificar a importação em PostgreSQL real, os testes aceitam `RESERVAE_SEED_TEST_CONNECTION`. Essa conexão fornece o servidor e as credenciais; cada teste cria e remove seu próprio banco com prefixo `reservae_seed_test_`, sem usar o banco indicado nela. Sem essa variável, os testes usam EF Core InMemory.
-
-## Testar autenticação
-
-Use `api/Reservae.http` nesta ordem:
-
-1. `POST /auth/register` com `email` e `password`.
-2. `POST /auth/login?useCookies=false` com as mesmas credenciais.
-3. Copie `accessToken` da resposta e envie `Authorization: Bearer <token>` a `GET /auth/me`.
-
-`/auth/me` exige autenticação e retorna somente ID, nome e e-mail. O token emitido pelo Identity é opaco, não é JWT. O Identity também disponibiliza `/auth/refresh` e endpoints de gerenciamento da conta.
-
-O cadastro padrão recebe apenas e-mail e senha. `Name` é opcional e não é preenchido por esse endpoint; para coletá-lo no cadastro, crie um endpoint próprio com DTO e `UserManager.CreateAsync(user, password)`. O envio de e-mail ainda não está configurado: confirmação de conta e recuperação por e-mail precisam de uma implementação de `IEmailSender<User>` antes de serem usadas. O setup permite login sem confirmação de e-mail.
-
-A interface do Swagger fica em `/swagger` e o documento OpenAPI em
-`/swagger/v1/swagger.json` no ambiente Development.
-
-## Evoluir o modelo
-
-Após alterar as entidades ou o mapeamento:
-
-```powershell
-cd api
-$env:ASPNETCORE_ENVIRONMENT = "Development"
-dotnet ef migrations add NomeDaAlteracao
-dotnet ef database update
-```
-
-Revise a migration antes de aplicá-la. Para usar o banco em endpoints, injete `ApplicationDbContext`; para operações de usuário e senha, use `UserManager<User>`.
-
-## Validação deste setup
-
-- Compilação com `dotnet build --no-restore` usando dependências já disponíveis: passou.
-- Migration inicial gerada e verificação `has-pending-model-changes`: modelo sem alterações pendentes.
-- A restauração completa de pacotes/ferramenta local ficou pendente por restrição de acesso ao NuGet.Config. A migration foi gerada com o dotnet-ef global já instalado.
-- Banco e fluxo completo de cadastro/login ainda não testados: dependem da conexão real com PostgreSQL.
-- O build apontou NU1903 na dependência preexistente `Microsoft.OpenApi` 2.0.0. A correção na linha 2.x está em 2.7.5 ou superior; atualizar e validar essa dependência quando o restore estiver disponível. Referência: https://github.com/advisories/GHSA-v5pm-xwqc-g5wc
-
-Referências de implementação:
-- https://learn.microsoft.com/aspnet/core/security/authentication/identity-api-authorization?view=aspnetcore-10.0
-- https://www.npgsql.org/efcore/
