@@ -9,7 +9,13 @@ using Reservae.Service;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authorization;
 using Reservae.Authorization;
+using Reservae.Data.Seed;
 
+var exportDemoData = args.Contains("--export-demo-data");
+var seedOnly = args.Contains("--seed-only");
+args = args.Where(arg => arg is not "--export-demo-data" and not "--seed-only").ToArray();
+if (exportDemoData && seedOnly)
+    throw new ArgumentException("Use apenas um dos modos: --export-demo-data ou --seed-only.");
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
@@ -95,8 +101,24 @@ builder.Services.AddScoped<AvailabilityRuleService>();
 builder.Services.AddScoped<BookableSlotService>();
 builder.Services.AddScoped<BookingService>();
 builder.Services.AddScoped<ImageUploadService>();
+builder.Services.AddScoped<DemoDataSeeder>();
 
 var app = builder.Build();
+if (exportDemoData)
+{
+    await using var scope = app.Services.CreateAsyncScope();
+    await scope.ServiceProvider.GetRequiredService<DemoDataSeeder>().ExportAsync();
+    return;
+}
+if (seedOnly || builder.Configuration.GetValue<bool>("DemoSeed:Enabled"))
+{
+    if (app.Environment.IsProduction())
+        throw new InvalidOperationException("A seed de demonstração não pode ser executada em Production.");
+    await using var scope = app.Services.CreateAsyncScope();
+    await scope.ServiceProvider.GetRequiredService<ApplicationDbContext>().Database.MigrateAsync();
+    await scope.ServiceProvider.GetRequiredService<DemoDataSeeder>().ApplyAsync();
+    if (seedOnly) return;
+}
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
