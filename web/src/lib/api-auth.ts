@@ -1,7 +1,7 @@
 import "server-only";
 import { cookies } from "next/headers";
 
-const baseUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5144";
+export const apiBaseUrl = process.env.API_INTERNAL_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5144";
 export const accessTokenCookie = "reservae_access_token";
 
 export type CurrentUser = { id: string; name: string | null; email: string | null };
@@ -22,5 +22,5 @@ export async function authenticatedFetch(path: string, options: RequestInit = {}
 
   const headers = new Headers(options.headers);
   headers.set("Authorization", `Bearer ${token}`);
-  return fetch(`${baseUrl}${path}`, { cache: "no-store", ...options, headers });
+  return fetch(`${apiBaseUrl}${path}`, { cache: "no-store", ...options, headers });
 }

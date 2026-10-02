@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { safeNextPath, signIn } from "@/src/lib/session";
+import { apiBaseUrl } from "@/src/lib/api-auth";
 
 export type RegisterState = { email: string; error: string };
 
@@ -16,7 +17,7 @@ export async function register(_previous: RegisterState, formData: FormData): Pr
 
   let response: Response;
   try {
-    response = await fetch(`${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5144"}/auth/register`, {
+    response = await fetch(`${apiBaseUrl}/auth/register`, {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }), cache: "no-store",
     });

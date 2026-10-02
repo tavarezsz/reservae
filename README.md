@@ -2,6 +2,73 @@
 
 API ASP.NET Core (.NET 10) com PostgreSQL, EF Core Code First e ASP.NET Core Identity.
 
+## Executar com Docker
+
+Instale o Docker Desktop com containers Linux e o Docker Compose v2. Não é necessário instalar .NET, Node.js ou PostgreSQL na máquina. Na raiz do repositório:
+
+```sh
+docker compose up --build -d --wait
+```
+
+O primeiro build baixa as imagens e dependências, compila o front e a API, e pode levar alguns minutos. O Compose aguarda o PostgreSQL ficar pronto, aplica as migrations e a seed pela API, e então inicia o front. Os containers usam builds compilados; alterações no código exigem executar o comando novamente.
+
+| Acesso | Endereço |
+| --- | --- |
+| Aplicação | http://localhost:3000 |
+| Swagger da API | http://localhost:5144/swagger |
+| Health check da API | http://localhost:5144/health |
+
+Faça login com **`teste@example.com` / `ReservaeDemo123!`**. Os demais usuários importados também recebem essa senha de demonstração. Há espaços, imagens, regras de disponibilidade e reservas para explorar.
+
+O ambiente usa três serviços: `web` (Next.js), `api` (ASP.NET Core) e `db` (PostgreSQL 17). O banco fica acessível somente na rede interna do Compose; as portas do front e da API são publicadas apenas em `127.0.0.1`. Seu PostgreSQL local e seu banco de desenvolvimento não são usados nem alterados.
+
+### Configuração opcional
+
+Os valores padrão já permitem subir o projeto. Para mudar portas ou senhas, copie o `.env.example` da **raiz** para `.env` e edite:
+
+```dotenv
+WEB_PORT=3000
+API_PORT=5144
+POSTGRES_PASSWORD=ReservaeLocalDb123!
+DEMO_PASSWORD=ReservaeDemo123!
+```
+
+Se já estiver executando o projeto localmente nessas portas, pare os processos locais ou use, por exemplo, `WEB_PORT=3100` e `API_PORT=5155`. Reexecute `docker compose up --build -d --wait`; o endereço público da API é incorporado ao build do Next.js e o CORS acompanha a porta escolhida para o front.
+
+As senhas são usadas somente na primeira inicialização dos respectivos dados. Alterar `POSTGRES_PASSWORD` no `.env` não altera a senha de um PostgreSQL já inicializado; alterar `DEMO_PASSWORD` não redefine as contas existentes. Para uma nova demonstração com outras senhas, reinicialize os volumes conforme descrito abaixo.
+
+### Persistência e comandos úteis
+
+Os volumes `postgres-data`, `uploaded-images` e `data-protection-keys` preservam o banco, os uploads e as chaves que protegem os tokens do Identity. Reiniciar ou recriar containers mantém esses dados. A seed é ignorada quando o banco já está populado.
+
+```sh
+# Estado dos serviços
+docker compose ps
+
+# Acompanhar os logs
+docker compose logs -f
+
+# Parar e remover os containers, preservando os volumes
+docker compose down
+
+# Subir novamente
+docker compose up -d --wait
+
+# Abrir o PostgreSQL pelo terminal
+docker compose exec db psql -U reservae -d reservae
+```
+
+Para **apagar todos os dados da demonstração**, incluindo imagens enviadas e chaves de autenticação, e começar novamente com a seed:
+
+```sh
+docker compose down --volumes
+docker compose up --build -d --wait
+```
+
+O Compose configura a API em `Development` para habilitar Swagger e a seed, e o Next.js usa um build de produção. O cookie de sessão usa `SESSION_COOKIE_SECURE=false` somente porque este ambiente local é servido por HTTP. Fora desse cenário, o front continua usando cookies seguros por padrão em produção. `API_INTERNAL_URL` é utilizado somente no servidor Next; `NEXT_PUBLIC_API_URL` identifica o endereço acessível pelo navegador. Os arquivos `.env.local`, a configuração local do banco e os uploads fora da seed são excluídos dos contextos de build.
+
+Referências: [ordem de inicialização do Compose](https://docs.docker.com/compose/how-tos/startup-order/), [variáveis de ambiente do Next.js](https://nextjs.org/docs/app/guides/environment-variables) e [persistência das chaves do ASP.NET Core](https://learn.microsoft.com/en-us/aspnet/core/security/data-protection/configuration/overview?view=aspnetcore-10.0).
+
 ## Estrutura
 
 - `api/`: API ASP.NET Core, entidades, serviços, repositórios e migrations.

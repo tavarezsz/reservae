@@ -1,0 +1,71 @@
+name: reservae
+
+services:
+  db:
+    image: postgres:17-bookworm
+    environment:
+      POSTGRES_DB: reservae
+      POSTGRES_USER: reservae
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ReservaeLocalDb123!}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ./api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_HTTP_PORTS: "8080"
+      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=reservae;Username=reservae;Password=${POSTGRES_PASSWORD:-ReservaeLocalDb123!}"
+      Cors__AllowedOrigins__0: http://localhost:${WEB_PORT:-3000}
+      DemoSeed__Enabled: "true"
+      DemoSeed__Password: ${DEMO_PASSWORD:-ReservaeDemo123!}
+      DataProtection__KeysPath: /app/data-protection-keys
+    ports:
+      - "127.0.0.1:${API_PORT:-5144}:8080"
+    volumes:
+      - uploaded-images:/app/wwwroot/uploads/images
+      - data-protection-keys:/app/data-protection-keys
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:8080/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./web
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:${API_PORT:-5144}
+    environment:
+      API_INTERNAL_URL: http://api:8080
+      SESSION_COOKIE_SECURE: "false"
+    ports:
+      - "127.0.0.1:${WEB_PORT:-3000}:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 20s
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
+  uploaded-images:
+  data-protection-keys:

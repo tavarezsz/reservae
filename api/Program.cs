@@ -10,6 +10,7 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authorization;
 using Reservae.Authorization;
 using Reservae.Data.Seed;
+using Microsoft.AspNetCore.DataProtection;
 
 var exportDemoData = args.Contains("--export-demo-data");
 var seedOnly = args.Contains("--seed-only");
@@ -19,6 +20,11 @@ if (exportDemoData && seedOnly)
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddHealthChecks();
+if (builder.Configuration["DataProtection:KeysPath"] is { Length: > 0 } keysPath)
+    builder.Services.AddDataProtection()
+        .SetApplicationName("Reservae")
+        .PersistKeysToFileSystem(new DirectoryInfo(keysPath));
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo
@@ -141,6 +147,7 @@ app.UseCors("Web");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.MapHealthChecks("/health");
 app.MapGroup("/auth").MapIdentityApi<User>();
 app.MapGet("/auth/me", async (System.Security.Claims.ClaimsPrincipal principal, UserManager<User> users) =>
 {  

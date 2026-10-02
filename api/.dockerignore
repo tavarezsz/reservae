@@ -1,0 +1,8 @@
+bin/
+obj/
+.config/
+wwwroot/uploads/images/*
+!wwwroot/uploads/images/.gitkeep
+appsettings.Development.json
+*.http
+.env*
